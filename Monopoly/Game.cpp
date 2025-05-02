@@ -57,7 +57,7 @@ Game::Game()
 {
 	currentPlayerIdx = 0;
 	gameOver = false;
-	srand(time(nullptr));
+	srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 void Game::InitGame()
@@ -139,12 +139,12 @@ void Game::NextTurn()
 	WaitForEnter();
 
 	// 換下一位
-	currentPlayerIdx = (currentPlayerIdx + 1) % players.size();
+	currentPlayerIdx = (currentPlayerIdx + 1) % static_cast<int>(players.size());
 }
 
 bool Game::CheckWinCondition()
 {
-	for (int i = 0; i < players.size(); i++) {
+	for (size_t i = 0; i < players.size(); i++) {
 		if (players[i]->GetMoney() >= 2000) {
 			std::cout << "\n" << players[i]->GetName() << " 贏得勝利！" << std::endl;
 			gameOver = true;
@@ -157,7 +157,7 @@ bool Game::CheckWinCondition()
 void Game::EndGame()
 {
 	std::cout << "\n遊戲結束，最終資金：" << std::endl;
-	for (int i = 0; i < players.size(); i++) {
+	for (size_t i = 0; i < players.size(); i++) {
 		std::cout << players[i]->GetName() << ": $" << players[i]->GetMoney() << std::endl;
 	}
 }
@@ -202,7 +202,7 @@ void Game::PrintMapStatus()
 
 void Game::PrintPlayerStatus()
 {
-	for (int i = 0; i < players.size(); i++) {
+	for (size_t i = 0; i < players.size(); i++) {
 		std::string colorCode = GetColorCode(players[i]->GetColor());
 		std::cout << colorCode;
 		std::cout << "玩家名稱：" << players[i]->GetName() << '\t' << "資金：" << players[i]->GetMoney() << '\n';
@@ -250,8 +250,8 @@ int Game::GetUserChoice(const std::string question, const std::vector<std::strin
 	while (true) {
 		Clear();
 		std::cout << question << std::endl;
-		for (int i = 0; i < options.size(); ++i) {
-			if (i == selected)
+		for (size_t i = 0; i < options.size(); ++i) {
+			if (static_cast<int>(i) == selected)
 				std::cout << " > " << "【" << options[i] << "】" << "\n";
 			else
 				std::cout << "   " << "【" << options[i] << "】" << "\n";
@@ -260,8 +260,8 @@ int Game::GetUserChoice(const std::string question, const std::vector<std::strin
 		int key = _getch(); // 取得按鍵
 		if (key == 224) {   // 特殊按鍵
 			key = _getch();
-			if (key == 72) selected = (selected - 1 + options.size()) % options.size(); // 上
-			if (key == 80) selected = (selected + 1) % options.size(); // 下
+			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size()); // 上
+			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size()); // 下
 		}
 		else if (key == '\r') { // Enter
 			return selected;

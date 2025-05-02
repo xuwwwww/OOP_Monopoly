@@ -5,9 +5,9 @@ class Player;
 
 class Item {
 public:
-	virtual void Use(Player* p);
-	virtual std::string GetName();
-	virtual std::string GetDescription();
+	virtual void Use(Player* p) = 0;
+	virtual std::string GetName() = 0;
+	virtual std::string GetDescription() = 0;
 	virtual ~Item() = default;
 };
 

@@ -46,7 +46,7 @@ public:
 	/**
 	 * 取得玩家所持有的道具
 	 */
-	std::vector<Item> GetItem();
+	std::vector<Item*> GetItem();
 
 	/**
 	 * 使用道具（尚未實作）
@@ -98,5 +98,5 @@ private:
 	int position;
 
 	/** 持有道具清單 */
-	std::vector<Item> item;
+	std::vector<Item*> item;
 };

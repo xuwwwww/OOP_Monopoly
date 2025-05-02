@@ -207,8 +207,12 @@ void Tile::OnLand(Player* p)
 }
 
 void Tile::PrintHouse(int level) {
+	if (level < 0 || static_cast<size_t>(level) >= houses.size()) {
+		std::cerr << "警告：PrintHouse 的 level 超出範圍 (" << level << ")\n";
+		return;
+	}
 	auto house = houses[level];
-	for (int i = 0; i < house.size(); i++) {
+	for (size_t i = 0; i < house.size(); i++) {
 		std::cout << house[i] << std::endl;
 	}
 	std::cout << std::endl;
@@ -222,21 +226,20 @@ int Tile::GetUserChoice(int idx, const std::string question, const std::vector<s
 		std::cout << "\033[2J\033[H";
 		std::cout << question << "\n\n";
 		PrintHouse(idx);
-		// std::cout << "請選擇操作：\n\n";
-		for (int i = 0; i < options.size(); ++i) {
-			if (i == selected)
+		for (size_t i = 0; i < options.size(); ++i) {
+			if (static_cast<int>(i) == selected)
 				std::cout << " > " << "【" << options[i] << "】" << "\n";
 			else
 				std::cout << "   " << "【" << options[i] << "】" << "\n";
 		}
 
-		int key = _getch(); // 取得按鍵
-		if (key == 224) {   // 特殊按鍵
+		int key = _getch();
+		if (key == 224) {
 			key = _getch();
-			if (key == 72) selected = (selected - 1 + options.size()) % options.size(); // 上
-			if (key == 80) selected = (selected + 1) % options.size(); // 下
+			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
+			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
 		}
-		else if (key == '\r') { // Enter
+		else if (key == '\r') {
 			return selected;
 		}
 	}

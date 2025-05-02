@@ -33,22 +33,24 @@ int Player::GetPosition()
 }
 
 
-void Player::SetPosition(int posistion)
+void Player::SetPosition(int pos)
 {
+	this->position = pos;
 }
 
 
-std::vector<Item> Player::GetItem()
+std::vector<Item*> Player::GetItem()
 {
-	return std::vector<Item>();
+	return item;
 }
 
 void Player::UseItem(Item* item)
 {
 }
 
-void Player::AddItem(Item* item)
+void Player::AddItem(Item* _item)
 {
+	item.push_back(_item);
 }
 
 void Player::Move(int steps, int mapSize)
@@ -59,7 +61,7 @@ void Player::Move(int steps, int mapSize)
 bool Player::BuyProperty(int price)
 {
 	if (money < price) {
-		std::cout << "財產不足，不得購買！\n";
+		std::cout << "財產不足，不得購買\n";
 		return false;
 	}
 	else {
@@ -76,4 +78,7 @@ void Player::Pay(Player* other, int amount)
 
 void Player::PrintStatus()
 {
+	std::cout << "玩家: " << name << " | ";
+	std::cout << "位置: " << position << " | ";
+	std::cout << "金錢: $" << money << std::endl;
 }
