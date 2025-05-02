@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Map.h"
 #include <cstdlib>
 #include <ctime>
 #include <vector>
@@ -90,6 +91,7 @@ void Game::InitGame()
 
 	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
 
+	Clear(); // 在玩家設定完成後清除畫面並顯示初始狀態
 	WaitForEnter();
 }
 
@@ -176,28 +178,8 @@ void Game::Clear()
 
 void Game::PrintMapStatus()
 {
-	auto mapInfo = gameMap->getMap();
-	auto map = mapInfo.first;
-	auto names = mapInfo.second;
-
-	int N = map.size();
-	int half = N / 2;
-
-	for (int i = 0; i < half; ++i) {
-		std::string colorCode = GetBackgroundColorCode(map[i]->getColor());
-		std::cout << colorCode;
-		std::cout << "[" << i << ". " << names[i] << "] ";
-		std::cout << "\033[0m";
-	}
-	std::cout << std::endl;
-
-	for (int i = N - 1; i >= half; --i) {
-		std::string colorCode = GetBackgroundColorCode(map[i]->getColor());
-		std::cout << colorCode;
-		std::cout << "[" << i << ". " << names[i] << "] ";
-		std::cout << "\033[0m";
-	}
-	std::cout << std::endl;
+	// 直接呼叫 Map 類別的 PrintMap 函式，使用新的網格佈局
+	gameMap->PrintMap(players);
 }
 
 void Game::PrintPlayerStatus()
