@@ -72,8 +72,28 @@ bool Player::BuyProperty(int price)
 
 void Player::Pay(Player* other, int amount)
 {
-	other->money += amount;
-	this->money -= amount;
+	// 檢查是否有足夠的錢
+	if (money < amount) {
+		// 如果是銀行或特殊玩家，允許金額為負
+		if (name == "bank") {
+			other->money += amount;
+			this->money -= amount;
+			return;
+		}
+		
+		// 如果沒有足夠的錢，只支付剩餘的金額
+		std::cout << name << " 資金不足，只能支付 " << money << " 元。\n";
+		other->money += money;
+		this->money = 0;
+		
+		// 檢查是否破產
+		std::cout << name << " 已破產！\n";
+	}
+	else {
+		// 有足夠的錢，正常支付
+		other->money += amount;
+		this->money -= amount;
+	}
 }
 
 void Player::PrintStatus()

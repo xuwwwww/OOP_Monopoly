@@ -107,6 +107,14 @@ void Game::StartGame()
 void Game::NextTurn()
 {
 	auto currentPlayer = players[currentPlayerIdx];
+	
+	// 如果當前玩家已破產，跳到下一位
+	if (currentPlayer->GetMoney() <= 0) {
+		// 換下一位
+		currentPlayerIdx = (currentPlayerIdx + 1) % static_cast<int>(players.size());
+		return;
+	}
+	
 	std::cout << "\n輪到 " << currentPlayer->GetName() << " 的回合。" << std::endl;
 	if (currentPlayer->inHospital) {
 		if (currentPlayer->hosipitalDay >= 3) {
@@ -146,6 +154,25 @@ void Game::NextTurn()
 
 bool Game::CheckWinCondition()
 {
+	// 計算仍在遊戲中的玩家數
+	int activePlayers = 0;
+	int lastPlayerIdx = -1;
+	
+	for (size_t i = 0; i < players.size(); i++) {
+		if (players[i]->GetMoney() > 0) {
+			activePlayers++;
+			lastPlayerIdx = i;
+		}
+	}
+	
+	// 如果只剩一位玩家沒有破產，則他獲勝
+	if (activePlayers == 1 && lastPlayerIdx != -1) {
+		std::cout << "\n" << players[lastPlayerIdx]->GetName() << " 是唯一沒有破產的玩家，獲得勝利！" << std::endl;
+		gameOver = true;
+		return true;
+	}
+	
+	// 檢查是否有玩家達到資金條件獲勝
 	for (size_t i = 0; i < players.size(); i++) {
 		if (players[i]->GetMoney() >= 2000) {
 			std::cout << "\n" << players[i]->GetName() << " 贏得勝利！" << std::endl;
@@ -153,6 +180,7 @@ bool Game::CheckWinCondition()
 			return true;
 		}
 	}
+	
 	return false;
 }
 
