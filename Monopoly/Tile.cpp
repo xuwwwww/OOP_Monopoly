@@ -1,6 +1,6 @@
 #include "Tile.h"
 #include "Player.h"
-
+#include "HorseRacing.h"
 #include <conio.h>
 #include <string>
 
@@ -44,8 +44,11 @@ std::vector<std::vector<std::string>> houses = {
 		"|   ___   |",
 		"|  |___|  |",
 		"|_________|"
-	}
+	},
+	{}
 };
+
+Player bank("bank", "black", 1 << 31);
 
 StartTile::StartTile()
 {
@@ -54,6 +57,7 @@ StartTile::StartTile()
 
 void StartTile::OnLand(Player* p)
 {
+	bank.Pay(p, 200);
 }
 
 PropertyTile::PropertyTile(int _id, int _price, std::string _name)
@@ -120,16 +124,16 @@ void PropertyTile::OnLand(Player* p)
 		int choice = GetUserChoice(level, question, options);
 
 		if (choice == 0) {
-			if (p->BuyProperty(price)) {
+			if (p->BuyProperty(price)) { // 有問題 只用200就升級了
 				std::cout << "\n升級成功！\n";
 				Upgrade();
 			}
 			else {
-				std::cout << "金錢不足，無法購買。\n";
+				std::cout << "金錢不足，無法升級。\n";
 			}
 		}
 	}
-	else if (owner != p) {
+	else if (owner != p) { // 有問題 錢可以變負數
 		std::cout << "此土地為 " << owner->GetName() << " 的土地，支付 "
 			<< price << " 給 " << owner->GetName() << "。\n";
 		p->Pay(owner, price);
@@ -150,7 +154,25 @@ void ShopTile::OnLand(Player* p)
 	"否"
 	};
 	int choice = GetUserChoice(3, question, options);
+	
+	if (choice) return;
 
+	std::string welcome = "歡迎光臨商店!";
+	std::vector<std::string> goods = {
+		"test1",
+		"test2",
+		"離開"
+	};
+	choice = GetUserChoice(3, welcome, goods);
+
+	switch (choice) {
+	case 0:
+		break;
+	case 1:
+		break;
+	default:
+		break;
+	}
 }
 
 HospitalTile::HospitalTile()
@@ -177,6 +199,23 @@ ChanceTile::ChanceTile()
 
 void ChanceTile::OnLand(Player* p)
 {
+	GetUserChoice(5, "機會格，來抽取機會吧!!!", { "抽" });
+	char chance = rand() % 2;
+
+	HorseRacing miniGame;
+	switch (chance) {
+	case 0:
+		std::cout << "意外走進賭馬場\n";
+		WaitForEnter();
+		miniGame.init(p);
+		miniGame.gameStart();
+		break;
+	case 1:
+		std::cout << "受傷暫停行動1次\n";
+		p->inHospital = true;
+		p->hosipitalDay = 2;
+		break;
+	}
 }
 
 FateTile::FateTile()
@@ -186,6 +225,19 @@ FateTile::FateTile()
 
 void FateTile::OnLand(Player* p)
 {
+	GetUserChoice(5, "命運格，來抽取命運吧!!!", { "抽" });
+	char fate = rand() % 2;
+
+	switch (fate) {
+	case 0:
+		std::cout << "地上撿到錢包，失主贈100元\n";
+		bank.Pay(p, 100);
+		break;
+	case 1:
+		std::cout << "耳機掉到水溝，損失100元\n";
+		p->Pay(&bank, 100);
+		break;
+	}
 }
 
 MiniGameTile::MiniGameTile()
@@ -195,6 +247,19 @@ MiniGameTile::MiniGameTile()
 
 void MiniGameTile::OnLand(Player* p)
 {
+	int choice = GetUserChoice(5, "遊玩小遊戲", {
+		"賭馬",
+		"射龍門"
+		});
+	HorseRacing miniGame;
+	switch (choice) {
+	case 0:
+		miniGame.init(p);
+		miniGame.gameStart();
+		break;
+	case 1:
+		break;
+	}
 }
 
 std::string Tile::getColor()
