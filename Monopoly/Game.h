@@ -2,6 +2,8 @@
 
 #include "Player.h"
 #include "Map.h"
+#include <fstream>
+#include <string>
 
 enum class State { INIT, START, MOVED, ROUND_END, FINISH };
 
@@ -57,6 +59,49 @@ public:
 	 */
 	void PrintPlayerStatus();
 
+	/**
+	 * 保存遊戲進度到檔案
+	 * @param filename 保存檔案的路徑
+	 * @return 是否成功保存
+	 */
+	bool SaveGame(const std::string& filename = "save.json");
+
+	/**
+	 * 從檔案載入遊戲進度
+	 * @param filename 載入檔案的路徑
+	 * @return 是否成功載入
+	 */
+	bool LoadGame(const std::string& filename = "save.json");
+
+	/**
+	 * 檢查是否有保存的遊戲進度
+	 * @param filename 保存檔案的路徑
+	 * @return 是否有保存的進度
+	 */
+	bool HasSavedGame(const std::string& filename = "save.json");
+
+	/**
+	 * 刪除保存的遊戲進度
+	 * @param filename 保存檔案的路徑
+	 * @return 是否成功刪除
+	 */
+	bool DeleteSaveGame(const std::string& filename = "save.json");
+
+	/**
+	 * 顯示選單讓使用者以 ↑↓ 選擇選項
+	 * @param question 提問文字
+	 * @param options 可選項目（字串陣列）
+	 * @return 回傳使用者選擇的索引
+	 */
+	int GetUserChoice(const std::string question, const std::vector<std::string> options);
+	
+	/**
+	 * 處理玩家破產的情況
+	 * @param bankruptPlayer 破產的玩家
+	 * @param creditor 債權玩家（導致破產的玩家）
+	 */
+	void HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor);
+
 private:
 	Map* gameMap;					// 地圖物件
 	std::vector<Player*>players;	// 所有玩家指標
@@ -72,14 +117,6 @@ private:
 	 * 執行雙骰動畫並回傳總點數
 	 */
 	int RollDiceWithAsciiAnimation();
-
-	/**
-	 * 顯示選單讓使用者以 ↑↓ 選擇選項
-	 * @param question 提問文字
-	 * @param options 可選項目（字串陣列）
-	 * @return 回傳使用者選擇的索引
-	 */
-	int GetUserChoice(const std::string question, const std::vector<std::string> options);
 
 	/**
 	 * 暫停畫面直到使用者按下 Enter

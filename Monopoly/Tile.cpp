@@ -1,6 +1,7 @@
 #include "Tile.h"
 #include "Player.h"
 #include "HorseRacing.h"
+#include "Map.h"
 #include <conio.h>
 #include <string>
 
@@ -74,6 +75,11 @@ int PropertyTile::GetPrice()
 	return price;
 }
 
+int PropertyTile::GetLevel()
+{
+	return level;
+}
+
 void PropertyTile::Upgrade()
 {
 	level++;
@@ -93,7 +99,7 @@ void PropertyTile::SetOwner(Player* p)
 void PropertyTile::OnLand(Player* p)
 {
 	if (owner == NULL) {
-		std::string question = "抵達" + name + "！土地價格為 " + std::to_string(price) + " 元，是否要購買？";
+		std::string question = "抵達" + name + "！\n土地價格為 " + std::to_string(price) + " 元\n你現在有 " + std::to_string(p->GetMoney()) + " 元\n是否要購買？";
 		std::vector<std::string> options = {
 		"購買",
 		"放棄"
@@ -116,7 +122,7 @@ void PropertyTile::OnLand(Player* p)
 			return;
 		}
 
-		std::string question = "是否要花費 300 元升級土地？\n";
+		std::string question = "是否要花費 300 元升級土地？\n你現在有 " + std::to_string(p->GetMoney()) + " 元";
 		std::vector<std::string> options = {
 		"升級",
 		"放棄"
@@ -124,7 +130,7 @@ void PropertyTile::OnLand(Player* p)
 		int choice = GetUserChoice(level, question, options);
 
 		if (choice == 0) {
-			if (p->BuyProperty(price)) { // 有問題 只用200就升級了
+			if (p->BuyProperty(300)) {
 				std::cout << "\n升級成功！\n";
 				Upgrade();
 			}
@@ -133,10 +139,16 @@ void PropertyTile::OnLand(Player* p)
 			}
 		}
 	}
-	else if (owner != p) { // 有問題 錢可以變負數
-		std::cout << "此土地為 " << owner->GetName() << " 的土地，支付 "
-			<< price << " 給 " << owner->GetName() << "。\n";
-		p->Pay(owner, price);
+	else if (owner != p) {
+		int rent = price;
+		if (level == 1) rent = price * 2;
+		else if (level == 2) rent = price * 3;
+
+		std::cout << "此土地為 " << owner->GetName() << " 的土地，需支付 "
+			<< rent << " 元給 " << owner->GetName() << "。\n";
+		std::cout << "你現在有 " << p->GetMoney() << " 元\n";
+		
+		p->Pay(owner, rent);
 	}
 }
 
@@ -200,9 +212,13 @@ ChanceTile::ChanceTile()
 void ChanceTile::OnLand(Player* p)
 {
 	GetUserChoice(5, "機會格，來抽取機會吧!!!", { "抽" });
-	char chance = rand() % 2;
+	char chance = rand() % 8;
 
+	std::vector<PropertyTile*> ownedProperties;
+	std::vector<std::string> propertyNames;
 	HorseRacing miniGame;
+	Map* gameMap = new Map();
+	
 	switch (chance) {
 	case 0:
 		std::cout << "意外走進賭馬場\n";
@@ -213,9 +229,63 @@ void ChanceTile::OnLand(Player* p)
 	case 1:
 		std::cout << "受傷暫停行動1次\n";
 		p->inHospital = true;
-		p->hosipitalDay = 2;
+		p->hosipitalDay = 0;
+		break;
+	case 2:
+		std::cout << "生病住院2回合\n";
+		p->inHospital = true;
+		p->hosipitalDay = 0;
+		break;
+	case 3:
+		std::cout << "中了樂透小獎，獲得 300 元\n";
+		bank.Pay(p, 300);
+		break;
+	case 4:
+		std::cout << "獲得免費升級一處土地的機會\n";
+		
+		for (int i = 0; i < 28; i++) {
+			Tile* tile = gameMap->GetTileAt(i);
+			PropertyTile* propTile = dynamic_cast<PropertyTile*>(tile);
+			if (propTile && propTile->GetOwner() == p) {
+				if (propTile->GetLevel() < 2) {
+					ownedProperties.push_back(propTile);
+					std::string tileName = "第 " + std::to_string(i) + " 格的土地";
+					propertyNames.push_back(tileName);
+				}
+			}
+		}
+		
+		if (ownedProperties.empty()) {
+			std::cout << "你沒有可升級的土地！\n";
+		} else {
+			propertyNames.push_back("放棄升級");
+			int choice = GetUserChoice(4, "選擇要免費升級的土地：", propertyNames);
+			
+			if (choice < static_cast<int>(ownedProperties.size())) {
+				PropertyTile* selectedProperty = ownedProperties[choice];
+				selectedProperty->Upgrade();
+				std::cout << "土地升級成功！\n";
+			} else {
+				std::cout << "你選擇放棄免費升級的機會。\n";
+			}
+		}
+		break;
+	case 5:
+		std::cout << "獲得銀行補助金 150 元\n";
+		bank.Pay(p, 150);
+		break;
+	case 6:
+		std::cout << "違反交通規則，罰款 100 元\n";
+		p->Pay(&bank, 100);
+		break;
+	case 7:
+		std::cout << "食物中毒，住院治療，暫停行動1回合\n";
+		p->inHospital = true;
+		p->hosipitalDay = 0;
 		break;
 	}
+	
+	delete gameMap;
 }
 
 FateTile::FateTile()
@@ -226,7 +296,7 @@ FateTile::FateTile()
 void FateTile::OnLand(Player* p)
 {
 	GetUserChoice(5, "命運格，來抽取命運吧!!!", { "抽" });
-	char fate = rand() % 2;
+	char fate = rand() % 10;
 
 	switch (fate) {
 	case 0:
@@ -236,6 +306,41 @@ void FateTile::OnLand(Player* p)
 	case 1:
 		std::cout << "耳機掉到水溝，損失100元\n";
 		p->Pay(&bank, 100);
+		break;
+	case 2:
+		std::cout << "感冒了，需要休息一回合\n";
+		p->inHospital = true;
+		p->hosipitalDay = 0;
+		break;
+	case 3:
+		std::cout << "踩到釘子，去醫院打破傷風針，暫停行動1回合\n";
+		p->inHospital = true;
+		p->hosipitalDay = 0;
+		break;
+	case 4:
+		std::cout << "投資股票獲利，獲得 200 元\n";
+		bank.Pay(p, 200);
+		break;
+	case 5:
+		std::cout << "所得稅申報，需繳納 150 元\n";
+		p->Pay(&bank, 150);
+		break;
+	case 6:
+		std::cout << "朋友還錢，獲得 120 元\n";
+		bank.Pay(p, 120);
+		break;
+	case 7:
+		std::cout << "手機故障維修，花費 80 元\n";
+		p->Pay(&bank, 80);
+		break;
+	case 8:
+		std::cout << "生日收到禮金，獲得 50 元\n";
+		bank.Pay(p, 50);
+		break;
+	case 9:
+		std::cout << "突發高燒，需要住院，暫停行動1回合\n";
+		p->inHospital = true;
+		p->hosipitalDay = 0;
 		break;
 	}
 }

@@ -26,28 +26,26 @@ public:
 	std::string color = "";	// 儲存顏色資訊
 
 	/**
-	 * 取得此格的顏色
-	 * @return 回傳顏色字串
+	 * 拿這格的顏色 
 	 */
 	std::string getColor();
 
 	/**
-	 * 當玩家抵達此格時觸發的效果（可被覆寫）
+	 * 玩家踩到這格會觸發的事件（子類實作具體內容）
 	 */
 	virtual void OnLand(Player* p);
 
 	/**
-	 * 顯示選項選單，供使用者做選擇
-	 * @param idx 當前選項索引（可用來顯示預選項）
-	 * @param question 問題敘述
-	 * @param options 可選項目列表
-	 * @return 選擇的索引值
+	 * 印個選單讓玩家選，就是那種箭頭上下移動的menu
+	 * @param idx 預選項
+	 * @param question 問題
+	 * @param options 選項
+	 * @return 選了哪一項
 	 */
 	int GetUserChoice(int idx, const std::string question, const std::vector<std::string> options);
 
 	/**
-	 * 以 ASCII 圖示顯示房屋等級
-	 * @param n 房屋等級（屋數）
+	 * 用ASCII符號畫出房子
 	 */
 	void PrintHouse(int n);
 };
@@ -91,6 +89,12 @@ public:
 	 * 取得地價
 	 */
 	int GetPrice();
+
+	/**
+	 * 取得地產等級
+	 * @return 地產等級
+	 */
+	int GetLevel();
 
 	/**
 	 * 升級地產

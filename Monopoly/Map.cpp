@@ -20,83 +20,170 @@ void Map::LoadMap(std::string path)
 		return;
 	}
 
+	// 清除原有的地圖格子
 	for (Tile* tile : map) {
 		delete tile;
 	}
 	map.clear();
 	names.clear();
 
-	std::string line;
-	int lineNumber = 0;
-	while (std::getline(inputFile, line)) {
-		lineNumber++;
-		if (lineNumber == 1) continue;
-		if (line.empty() || line[0] == '#') continue;
-
-		std::stringstream ss(line);
-		std::string segment;
-		std::vector<std::string> parts;
-
-		while(std::getline(ss, segment, ',')) {
-			parts.push_back(segment);
-		}
-
-		if (parts.size() < 2) {
-			std::cerr << "警告：地圖檔第 " << lineNumber << " 行格式錯誤，已跳過。\n";
-			continue;
-		}
-
-		std::string typeStr = parts[0];
-		std::string nameStr = parts[1];
-		int price = 0;
-		int level = 0;
-
-		if (parts.size() >= 3) {
-			try {
-				price = std::stoi(parts[2]);
-			} catch (const std::invalid_argument&) {
-				std::cerr << "警告：地圖檔第 " << lineNumber << " 行價格格式錯誤，使用預設值 0。\n";
-			} catch (const std::out_of_range&) {
-				std::cerr << "警告：地圖檔第 " << lineNumber << " 行價格超出範圍，使用預設值 0。\n";
-			}
-		}
-		if (parts.size() >= 4) {
-			try {
-				level = std::stoi(parts[3]);
-			} catch (const std::invalid_argument&) {
-				std::cerr << "警告：地圖檔第 " << lineNumber << " 行等級格式錯誤，使用預設值 0。\n";
-			} catch (const std::out_of_range&) {
-				std::cerr << "警告：地圖檔第 " << lineNumber << " 行等級超出範圍，使用預設值 0。\n";
-			}
-		}
-
-		Tile* newTile = nullptr;
-		if (typeStr == "START") {
-			newTile = new StartTile();
-		} else if (typeStr == "PROPERTY") {
-			newTile = new PropertyTile(level, price, nameStr);
-		} else if (typeStr == "SHOP") {
-			newTile = new ShopTile();
-		} else if (typeStr == "HOSPITAL") {
-			newTile = new HospitalTile();
-		} else if (typeStr == "CHANCE") {
-			newTile = new ChanceTile();
-		} else if (typeStr == "FATE") {
-			newTile = new FateTile();
-		} else if (typeStr == "GAME") {
-			newTile = new MiniGameTile();
-		} else {
-			std::cerr << "警告：地圖檔第 " << lineNumber << " 行類型 '/" << typeStr << "/' 無效，已跳過。\n";
-			continue;
-		}
-
-		if (newTile) {
-			addTile(newTile, nameStr);
-		}
-	}
-
+	// 讀取 JSON 檔案內容
+	std::string jsonContent((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
 	inputFile.close();
 
+	try {
+		// 解析 JSON 資料
+		// 注意：此處使用簡易的 JSON 解析方法，實際專案中建議使用 JSON 解析庫
+		// JSON 格式預期如下：
+		/*
+		{
+			"tiles": [
+				{
+					"type": "START",
+					"name": "起點",
+					"price": 0,
+					"level": 0
+				},
+				{
+					"type": "PROPERTY",
+					"name": "台北",
+					"price": 200,
+					"level": 0
+				},
+				...
+			]
+		}
+		*/
+
+		// 簡易解析 - 這裡僅作示範，實際應使用 JSON 庫如 nlohmann/json
+		// 使用逐行讀取方式模擬 JSON 解析
+		std::stringstream ss(jsonContent);
+		std::string line;
+		bool inTilesArray = false;
+		
+		while (std::getline(ss, line)) {
+			// 跳過空白行和註解
+			if (line.empty() || line.find("//") == 0) continue;
+			
+			// 開始解析 tiles 陣列
+			if (line.find("\"tiles\"") != std::string::npos) {
+				inTilesArray = true;
+				continue;
+			}
+			
+			// 不在 tiles 陣列中，跳過
+			if (!inTilesArray) continue;
+			
+			// 結束 tiles 陣列
+			if (line.find("]") != std::string::npos) {
+				inTilesArray = false;
+				continue;
+			}
+			
+			// 解析 tile 物件
+			if (line.find("{") != std::string::npos) {
+				std::string typeStr = "";
+				std::string nameStr = "";
+				int price = 0;
+				int level = 0;
+				
+				// 讀取 tile 物件屬性直到發現 }
+				std::string objLine;
+				while (std::getline(ss, objLine) && objLine.find("}") == std::string::npos) {
+					// 解析 type
+					if (objLine.find("\"type\"") != std::string::npos) {
+						size_t start = objLine.find(":") + 1;
+						size_t end = objLine.find(",", start);
+						if (end == std::string::npos) end = objLine.length();
+						typeStr = objLine.substr(start, end - start);
+						// 移除引號和空白
+						typeStr.erase(std::remove(typeStr.begin(), typeStr.end(), '\"'), typeStr.end());
+						typeStr.erase(std::remove(typeStr.begin(), typeStr.end(), ' '), typeStr.end());
+					}
+					
+					// 解析 name
+					if (objLine.find("\"name\"") != std::string::npos) {
+						size_t start = objLine.find(":") + 1;
+						size_t end = objLine.find(",", start);
+						if (end == std::string::npos) end = objLine.length();
+						nameStr = objLine.substr(start, end - start);
+						// 移除引號和空白
+						nameStr.erase(std::remove(nameStr.begin(), nameStr.end(), '\"'), nameStr.end());
+						nameStr.erase(std::remove(nameStr.begin(), nameStr.end(), ' '), nameStr.end());
+					}
+					
+					// 解析 price
+					if (objLine.find("\"price\"") != std::string::npos) {
+						size_t start = objLine.find(":") + 1;
+						size_t end = objLine.find(",", start);
+						if (end == std::string::npos) end = objLine.length();
+						std::string priceStr = objLine.substr(start, end - start);
+						// 移除空白
+						priceStr.erase(std::remove(priceStr.begin(), priceStr.end(), ' '), priceStr.end());
+						try {
+							price = std::stoi(priceStr);
+						} catch (...) {
+							std::cerr << "警告：價格格式錯誤 '" << priceStr << "'，使用預設值 0。\n";
+						}
+					}
+					
+					// 解析 level
+					if (objLine.find("\"level\"") != std::string::npos) {
+						size_t start = objLine.find(":") + 1;
+						size_t end = objLine.find(",", start);
+						if (end == std::string::npos) end = objLine.length();
+						std::string levelStr = objLine.substr(start, end - start);
+						// 移除空白
+						levelStr.erase(std::remove(levelStr.begin(), levelStr.end(), ' '), levelStr.end());
+						try {
+							level = std::stoi(levelStr);
+						} catch (...) {
+							std::cerr << "警告：等級格式錯誤 '" << levelStr << "'，使用預設值 0。\n";
+						}
+					}
+				}
+				
+				// 根據解析出的資料建立合適的 Tile 物件
+				Tile* newTile = nullptr;
+				if (typeStr == "START") {
+					newTile = new StartTile();
+				} else if (typeStr == "PROPERTY") {
+					newTile = new PropertyTile(level, price, nameStr);
+				} else if (typeStr == "SHOP") {
+					newTile = new ShopTile();
+				} else if (typeStr == "HOSPITAL") {
+					newTile = new HospitalTile();
+				} else if (typeStr == "CHANCE") {
+					newTile = new ChanceTile();
+				} else if (typeStr == "FATE") {
+					newTile = new FateTile();
+				} else if (typeStr == "GAME") {
+					newTile = new MiniGameTile();
+				} else {
+					std::cerr << "警告：未知的格子類型 '" << typeStr << "'，已跳過。\n";
+					continue;
+				}
+				
+				// 將建立的格子添加到地圖中
+				if (newTile) {
+					addTile(newTile, nameStr);
+				}
+			}
+		}
+	}
+	catch (const std::exception& e) {
+		std::cerr << "錯誤：解析地圖檔時發生錯誤：" << e.what() << "。將使用預設地圖。\n";
+		// 清除可能部分載入的地圖
+		for (Tile* tile : map) {
+			delete tile;
+		}
+		map.clear();
+		names.clear();
+		InitMap();
+		return;
+	}
+
+	// 如果沒有成功載入任何格子，使用預設地圖
 	if (map.empty()) {
 		std::cerr << "警告：地圖檔未成功載入任何格子，將使用預設地圖。\n";
 		InitMap();

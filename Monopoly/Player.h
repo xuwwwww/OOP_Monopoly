@@ -8,7 +8,7 @@ class Player
 {
 public:
 	/**
-	 * 建構子：初始化玩家名稱、顏色與起始金錢
+	 * 建構子：隨便塞個名字、顏色跟錢進去
 	 */
 	Player(std::string name, std::string color, int money);
 
@@ -19,68 +19,62 @@ public:
 	int hosipitalDay = 0;
 
 	/**
-	 * 取得玩家名稱
+	 * 拿玩家名字
 	 */
 	std::string GetName();
 
 	/**
-	 * 取得玩家顏色
+	 * 拿玩家顏色
 	 */
 	std::string GetColor();
 
 	/**
-	 * 取得目前金錢
+	 * 看看剩多少錢
 	 */
 	int GetMoney();
 
 	/**
-	 * 取得目前位置
+	 * 看看在哪一格
 	 */
 	int GetPosition();
 
 	/**
-	 * 設定玩家位置
+	 * 把玩家丟到某一格
 	 */
 	void SetPosition(int position);
 
 	/**
-	 * 取得玩家所持有的道具
+	 * 拿到玩家的道具清單
 	 */
 	std::vector<Item*> GetItem();
 
 	/**
-	 * 使用道具（尚未實作）
+	 * 使用道具（還沒做好）
 	 */
 	void UseItem(Item* item);
 
 	/**
-	 * 增加一個道具（尚未實作）
+	 * 撿到道具啦
 	 */
 	void AddItem(Item* item);
 
 	/**
-	 * 依擲骰點數移動玩家位置
-	 * @param steps 擲骰數
-	 * @param mapSize 地圖總格數
+	 * 移動位置：就是 position+steps 再 mod 一下地圖大小
 	 */
 	void Move(int steps, int mapSize);
 
 	/**
-	 * 購買地產
-	 * @param price 價格
-	 * @return 是否購買成功
+	 * 買地：有錢就扣一扣回傳 true，沒錢就乖乖回傳 false
 	 */
 	bool BuyProperty(int price);
 
 	/**
-	 * 付錢給其他玩家
-	 * @param other 接收金錢的玩家
-	 * @param amount 金額
+	 * 付錢：把錢轉給別人
 	 */
 	void Pay(Player* other, int amount);
 
 	/**
-	 * 印出玩家目前狀態
+	 * 印出玩家資訊：啥名字、位置跟多少錢
 	 */
 	void PrintStatus();
 
