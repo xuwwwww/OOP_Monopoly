@@ -2,8 +2,9 @@
 #include "Player.h"
 #include "HorseRacing.h"
 #include "Map.h"
-#include <conio.h>
-#include <string>
+#include "Item.h"
+#include "Monopoly.h"
+#include "Game.h"
 
 std::vector<std::vector<std::string>> houses = {
 	{
@@ -49,7 +50,22 @@ std::vector<std::vector<std::string>> houses = {
 	{}
 };
 
-Player bank("bank", "black", 1 << 31);
+Player bank("bank", "black", 1 << 30);
+
+string getHouse(int level) {
+	if (level < 0 || static_cast<size_t>(level) >= houses.size()) {
+		std::cerr << "警告：PrintHouse 的 level 超出範圍 (" << level << ")\n";
+		return "";
+	}
+	string result("");
+
+	auto house = houses[level];
+	for (size_t i = 0; i < house.size(); i++) {
+		result += house[i] + '\n';
+	}
+	return result;
+}
+
 
 StartTile::StartTile()
 {
@@ -104,7 +120,7 @@ void PropertyTile::OnLand(Player* p)
 		"購買",
 		"放棄"
 		};
-		int choice = GetUserChoice(level, question, options);
+		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
 
 		if (choice == 0) {
 			if (p->BuyProperty(price)) {
@@ -127,7 +143,7 @@ void PropertyTile::OnLand(Player* p)
 		"升級",
 		"放棄"
 		};
-		int choice = GetUserChoice(level, question, options);
+		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
 
 		if (choice == 0) {
 			if (p->BuyProperty(300)) {
@@ -165,26 +181,33 @@ void ShopTile::OnLand(Player* p)
 	"是",
 	"否"
 	};
-	int choice = GetUserChoice(3, question, options);
+	int choice = Monopoly::GetUserChoice(getHouse(3) + question, options);
 	
 	if (choice) return;
 
-	std::string welcome = "歡迎光臨商店!";
-	std::vector<std::string> goods = {
-		"test1",
-		"test2",
-		"離開"
-	};
-	choice = GetUserChoice(3, welcome, goods);
+	do {
+		std::string welcome = "歡迎光臨商店!";
+		std::vector<std::string> goods = {
+			"控制骰子, 300元",
+			"離開"
+		};
+		choice = Monopoly::GetUserChoice(getHouse(3) + welcome, goods);
 
-	switch (choice) {
-	case 0:
-		break;
-	case 1:
-		break;
-	default:
-		break;
-	}
+		switch (choice) {
+		case 0:
+			if (p->BuyProperty(300)) {
+				p->AddItem(new ControlDiceItem());
+				cout << "購買控制骰子成功!\n";
+			}
+			Monopoly::WaitForEnter();
+			break;
+		case 1:
+			break;
+		default:
+			break;
+		}
+
+	} while (choice != 1);
 }
 
 HospitalTile::HospitalTile()
@@ -194,7 +217,7 @@ HospitalTile::HospitalTile()
 
 void HospitalTile::OnLand(Player* p)
 {
-	PrintHouse(4);
+	std::cout << getHouse(4);
 	if (!p->inHospital) {
 		std::cout << "進醫院休息三天！";
 		p->inHospital = true;
@@ -211,25 +234,25 @@ ChanceTile::ChanceTile()
 
 void ChanceTile::OnLand(Player* p)
 {
-	GetUserChoice(5, "機會格，來抽取機會吧!!!", { "抽" });
+	Monopoly::GetUserChoice(getHouse(5) + "機會格，來抽取機會吧!!!", { "抽" });
 	char chance = rand() % 8;
 
 	std::vector<PropertyTile*> ownedProperties;
 	std::vector<std::string> propertyNames;
 	HorseRacing miniGame;
-	Map* gameMap = new Map();
+	Map* gameMap = Monopoly::game->gameMap;
 	
 	switch (chance) {
 	case 0:
 		std::cout << "意外走進賭馬場\n";
-		WaitForEnter();
+		Monopoly::WaitForEnter();
 		miniGame.init(p);
 		miniGame.gameStart();
 		break;
 	case 1:
 		std::cout << "受傷暫停行動1次\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hosipitalDay = 1;
 		break;
 	case 2:
 		std::cout << "生病住院2回合\n";
@@ -259,7 +282,7 @@ void ChanceTile::OnLand(Player* p)
 			std::cout << "你沒有可升級的土地！\n";
 		} else {
 			propertyNames.push_back("放棄升級");
-			int choice = GetUserChoice(4, "選擇要免費升級的土地：", propertyNames);
+			int choice = Monopoly::GetUserChoice(getHouse(4) + "選擇要免費升級的土地：", propertyNames);
 			
 			if (choice < static_cast<int>(ownedProperties.size())) {
 				PropertyTile* selectedProperty = ownedProperties[choice];
@@ -281,11 +304,9 @@ void ChanceTile::OnLand(Player* p)
 	case 7:
 		std::cout << "食物中毒，住院治療，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hosipitalDay = 1;
 		break;
 	}
-	
-	delete gameMap;
 }
 
 FateTile::FateTile()
@@ -295,7 +316,7 @@ FateTile::FateTile()
 
 void FateTile::OnLand(Player* p)
 {
-	GetUserChoice(5, "命運格，來抽取命運吧!!!", { "抽" });
+	Monopoly::GetUserChoice(getHouse(5) + "命運格，來抽取命運吧!!!", { "抽" });
 	char fate = rand() % 10;
 
 	switch (fate) {
@@ -310,12 +331,12 @@ void FateTile::OnLand(Player* p)
 	case 2:
 		std::cout << "感冒了，需要休息一回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hosipitalDay = 1;
 		break;
 	case 3:
 		std::cout << "踩到釘子，去醫院打破傷風針，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hosipitalDay = 1;
 		break;
 	case 4:
 		std::cout << "投資股票獲利，獲得 200 元\n";
@@ -340,7 +361,7 @@ void FateTile::OnLand(Player* p)
 	case 9:
 		std::cout << "突發高燒，需要住院，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hosipitalDay = 1;
 		break;
 	}
 }
@@ -352,7 +373,7 @@ MiniGameTile::MiniGameTile()
 
 void MiniGameTile::OnLand(Player* p)
 {
-	int choice = GetUserChoice(5, "遊玩小遊戲", {
+	int choice = Monopoly::GetUserChoice(getHouse(5) + "遊玩小遊戲", {
 		"賭馬",
 		"射龍門"
 		});
@@ -376,42 +397,17 @@ void Tile::OnLand(Player* p)
 {
 }
 
-void Tile::PrintHouse(int level) {
-	if (level < 0 || static_cast<size_t>(level) >= houses.size()) {
-		std::cerr << "警告：PrintHouse 的 level 超出範圍 (" << level << ")\n";
-		return;
-	}
-	auto house = houses[level];
-	for (size_t i = 0; i < house.size(); i++) {
-		std::cout << house[i] << std::endl;
-	}
-	std::cout << std::endl;
-}
+//void PrintHouse(int level) {
+//	if (level < 0 || static_cast<size_t>(level) >= houses.size()) {
+//		std::cerr << "警告：PrintHouse 的 level 超出範圍 (" << level << ")\n";
+//		return;
+//	}
+//	auto house = houses[level];
+//	for (size_t i = 0; i < house.size(); i++) {
+//		std::cout << house[i] << std::endl;
+//	}
+//	std::cout << std::endl;
+//}
 
-int Tile::GetUserChoice(int idx, const std::string question, const std::vector<std::string> options) {
 
-	int selected = 0;
-
-	while (true) {
-		std::cout << "\033[2J\033[H";
-		std::cout << question << "\n\n";
-		PrintHouse(idx);
-		for (size_t i = 0; i < options.size(); ++i) {
-			if (static_cast<int>(i) == selected)
-				std::cout << " > " << "【" << options[i] << "】" << "\n";
-			else
-				std::cout << "   " << "【" << options[i] << "】" << "\n";
-		}
-
-		int key = _getch();
-		if (key == 224) {
-			key = _getch();
-			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
-			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
-		}
-		else if (key == '\r') {
-			return selected;
-		}
-	}
-}
 

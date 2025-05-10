@@ -88,22 +88,16 @@ public:
 	bool DeleteSaveGame(const std::string& filename = "save.json");
 
 	/**
-	 * 顯示選單讓使用者以 ↑↓ 選擇選項
-	 * @param question 提問文字
-	 * @param options 可選項目（字串陣列）
-	 * @return 回傳使用者選擇的索引
-	 */
-	int GetUserChoice(const std::string question, const std::vector<std::string> options);
-	
-	/**
 	 * 處理玩家破產的情況
 	 * @param bankruptPlayer 破產的玩家
 	 * @param creditor 債權玩家（導致破產的玩家）
 	 */
 	void HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor);
 
-private:
+	Player* getCurrentPlayer();
+
 	Map* gameMap;					// 地圖物件
+private:
 	std::vector<Player*>players;	// 所有玩家指標
 	int currentPlayerIdx;			// 目前回合的玩家索引
 	bool gameOver;					// 是否結束遊戲
@@ -117,11 +111,6 @@ private:
 	 * 執行雙骰動畫並回傳總點數
 	 */
 	int RollDiceWithAsciiAnimation();
-
-	/**
-	 * 暫停畫面直到使用者按下 Enter
-	 */
-	void WaitForEnter();
 
 	/**
 	* 根據顏色名稱取得對應的顏色碼（文字顏色）

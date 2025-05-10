@@ -81,9 +81,6 @@ void Player::UseItem(Item* item)
 	
 	// 使用後從玩家的道具清單中移除
 	this->item.erase(this->item.begin() + itemIndex);
-	
-	// 釋放道具記憶體空間
-	delete item;
 }
 
 void Player::AddItem(Item* _item)

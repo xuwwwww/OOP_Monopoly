@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <conio.h>
+#include "Monopoly.h"
 
 // 一個簡單的選單功能，因為Game物件還未完全初始化
 int SimpleUserChoice(const std::string& question, const std::vector<std::string>& options) {
@@ -33,7 +34,8 @@ int SimpleUserChoice(const std::string& question, const std::vector<std::string>
 
 int main() {
 	Game game;
-	
+	Monopoly::game = &game;
+
 	// 檢查是否有存檔
 	if (game.HasSavedGame()) {
 		std::cout << "發現上次未完成的遊戲進度！" << std::endl;

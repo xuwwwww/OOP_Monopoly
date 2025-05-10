@@ -30,7 +30,7 @@ void ControlDiceItem::Use(Player* p)
         int key = _getch();
         if (key == 224) {
             key = _getch();
-            if (key == 72) selected = (selected - 1 + 6) % 6 + 1; // 上
+            if (key == 72) selected = (selected + 4) % 6 + 1; // 上
             if (key == 80) selected = selected % 6 + 1; // 下
         }
         else if (key == '\r') { // Enter 鍵確認

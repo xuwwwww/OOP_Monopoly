@@ -11,6 +11,7 @@
 #include <limits>
 #include <algorithm>
 #include <sstream>
+#include "Monopoly.h"
 
 // 全域遊戲實例指標，用於玩家破產處理
 Game* gameInstance = nullptr;
@@ -86,7 +87,7 @@ void Game::InitGame()
 		"4人"
 	};
 
-	int choice = GetUserChoice(question, options);
+	int choice = Monopoly::GetUserChoice(question, options, true);
 
 	playerNum = choice + 2;
 
@@ -104,7 +105,7 @@ void Game::InitGame()
 	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
 
 	Clear(); // 在玩家設定完成後清除畫面並顯示初始狀態
-	WaitForEnter();
+	Monopoly::WaitForEnter();
 }
 
 void Game::StartGame()
@@ -165,9 +166,10 @@ void Game::NextTurn()
 		std::string question = "輪到 " + currentPlayer->GetName() + " 的回合。\n目前金額: $" + std::to_string(currentPlayer->GetMoney());
 		std::vector<std::string> options = {
 			"進行擲骰",
-			"使用道具"
+			"使用道具",
+			//"作弊"
 		};
-		int choice = GetUserChoice(question, options);
+		int choice = Monopoly::GetUserChoice(question, options, true);
 
 		if (choice == 0) {
 			// 進行擲骰
@@ -185,7 +187,7 @@ void Game::NextTurn()
 			std::vector<Item*> items = currentPlayer->GetItem();
 			if (items.empty()) {
 				std::cout << "你沒有任何道具可以使用！\n";
-				WaitForEnter(); // 顯示訊息後等待玩家按Enter繼續
+				Monopoly::WaitForEnter(); // 顯示訊息後等待玩家按Enter繼續
 				continue; // 回到玩家行動選單
 			} else {
 				std::string itemQuestion = "選擇要使用的道具：";
@@ -195,7 +197,7 @@ void Game::NextTurn()
 				}
 				itemOptions.push_back("返回");
 				
-				int itemChoice = GetUserChoice(itemQuestion, itemOptions);
+				int itemChoice = Monopoly::GetUserChoice(itemQuestion, itemOptions, true);
 				if (itemChoice < static_cast<int>(items.size())) {
 					// 使用選定的道具
 					Item* selectedItem = items[itemChoice];
@@ -221,15 +223,37 @@ void Game::NextTurn()
 						// 不設定 playerTurnCompleted 為 true，讓玩家回到行動選單
 						continue;
 					}
+
+					delete selectedItem; // 刪除已使用的道具
 				} else {
 					// 選擇返回
 					continue; // 回到玩家行動選單
 				}
 			}
 		}
+		//else if (choice == 2) {
+		//	int temp;
+		//	std::cout << "輸入想去的格子: ";
+		//	std::cin >> temp;
+
+		//	if (temp < 0)
+		//		temp = 0;
+
+		//	temp %= gameMap->getSize();
+
+		//	if (currentPlayer->GetPosition() != temp) {
+		//		if (currentPlayer->GetPosition() > temp)
+		//			currentPlayer->Move(gameMap->getSize() - currentPlayer->GetPosition() + temp, gameMap->getSize());
+		//		else
+		//			currentPlayer->Move(temp - currentPlayer->GetPosition(), gameMap->getSize());
+		//	}
+
+		//	gameMap->GetTileAt(temp)->OnLand(currentPlayer);
+		//	playerTurnCompleted = true; // 玩家回合完成
+		//}
 	}
 
-	WaitForEnter();
+	Monopoly::WaitForEnter();
 
 	// 檢查玩家是否破產
 	if (currentPlayer->GetMoney() <= 0) {
@@ -299,7 +323,8 @@ void Game::HandlePlayerAction(Player* p)
 
 void Game::Clear()
 {
-	std::cout << "\033[2J\033[H"; // 清除畫面
+	//std::cout << "\033[2J\033[H"; // 清除畫面
+	system("cls");
 	PrintMapStatus();
 	PrintPlayerStatus();
 	std::cout << std::endl;
@@ -351,39 +376,6 @@ int Game::RollDiceWithAsciiAnimation() {
 
 	std::cout << "擲骰結果是 " << finalRoll << " 點！" << std::endl;
 	return finalRoll;
-}
-
-
-int Game::GetUserChoice(const std::string question, const std::vector<std::string> options) {
-
-	int selected = 0;
-
-	while (true) {
-		Clear();
-		std::cout << question << std::endl;
-		for (size_t i = 0; i < options.size(); ++i) {
-			if (static_cast<int>(i) == selected)
-				std::cout << " > " << "【" << options[i] << "】" << "\n";
-			else
-				std::cout << "   " << "【" << options[i] << "】" << "\n";
-		}
-
-		int key = _getch(); // 取得按鍵
-		if (key == 224) {   // 特殊按鍵
-			key = _getch();
-			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size()); // 上
-			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size()); // 下
-		}
-		else if (key == '\r') { // Enter
-			return selected;
-		}
-	}
-}
-
-void Game::WaitForEnter()
-{
-	std::cout << "\n按下 Enter 鍵繼續...";
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 std::string Game::GetColorCode(std::string colorName) {
@@ -937,7 +929,10 @@ void Game::HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor)
     
     // 檢查遊戲是否應該結束（只剩一名玩家）
     if (CheckWinCondition()) {
-        WaitForEnter();
+        Monopoly::WaitForEnter();
     }
 }
 
+Player* Game::getCurrentPlayer() {
+	return players[currentPlayerIdx];
+}

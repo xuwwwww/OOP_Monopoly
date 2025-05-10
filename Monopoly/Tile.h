@@ -34,20 +34,6 @@ public:
 	 * 玩家踩到這格會觸發的事件（子類實作具體內容）
 	 */
 	virtual void OnLand(Player* p);
-
-	/**
-	 * 印個選單讓玩家選，就是那種箭頭上下移動的menu
-	 * @param idx 預選項
-	 * @param question 問題
-	 * @param options 選項
-	 * @return 選了哪一項
-	 */
-	int GetUserChoice(int idx, const std::string question, const std::vector<std::string> options);
-
-	/**
-	 * 用ASCII符號畫出房子
-	 */
-	void PrintHouse(int n);
 };
 
 /**
