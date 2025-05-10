@@ -8,6 +8,7 @@
 
 namespace Monopoly {
     Game* game = nullptr;
+    Player bank("bank", "black", 1 << 30);
 }
 
 void Monopoly::setTextColor(const Color& color) {

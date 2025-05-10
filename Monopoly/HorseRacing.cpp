@@ -1,7 +1,7 @@
 #include "HorseRacing.h"
 #include "Monopoly.h"
 
-HorseRacing::HorseRacing() : horses(new Horse[4]) {
+HorseRacing::HorseRacing() : horses(new Horse[4]), betMoney(0), player(nullptr), length(0), choosedHorse(0) {
     odds = new double[4];
 }
 
@@ -122,11 +122,9 @@ void HorseRacing::gameStart() {
 
     cout << "\n賽事結束！獲勝的是 馬" << horses[winner].getName() << "！\n";
 
-    Player temp("temp", "black", 1 << 30);
-
     if (choosedHorse == winner) {
         cout << "你贏了！賺到 $" << betMoney * odds[winner] << '\n';
-        temp.Pay(player, betMoney * (1 + odds[winner]));
+        Monopoly::bank.Pay(player, betMoney * (1 + odds[winner]));
     }
     else {
         cout << "你輸了！損失 $" << betMoney << '\n';

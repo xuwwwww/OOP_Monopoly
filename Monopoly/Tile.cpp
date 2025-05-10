@@ -1,6 +1,7 @@
 #include "Tile.h"
 #include "Player.h"
 #include "HorseRacing.h"
+#include "SheLongMen.h"
 #include "Map.h"
 #include "Item.h"
 #include "Monopoly.h"
@@ -50,8 +51,6 @@ std::vector<std::vector<std::string>> houses = {
 	{}
 };
 
-Player bank("bank", "black", 1 << 30);
-
 string getHouse(int level) {
 	if (level < 0 || static_cast<size_t>(level) >= houses.size()) {
 		std::cerr << "警告：PrintHouse 的 level 超出範圍 (" << level << ")\n";
@@ -74,7 +73,8 @@ StartTile::StartTile()
 
 void StartTile::OnLand(Player* p)
 {
-	bank.Pay(p, 200);
+	Monopoly::bank.Pay(p, 200);
+	std::cout << "回到起點格: 獎勵200元\n";
 }
 
 PropertyTile::PropertyTile(int _id, int _price, std::string _name)
@@ -235,19 +235,20 @@ ChanceTile::ChanceTile()
 void ChanceTile::OnLand(Player* p)
 {
 	Monopoly::GetUserChoice(getHouse(5) + "機會格，來抽取機會吧!!!", { "抽" });
-	char chance = rand() % 8;
+	char chance = rand() % 9;
 
 	std::vector<PropertyTile*> ownedProperties;
 	std::vector<std::string> propertyNames;
-	HorseRacing miniGame;
+	HorseRacing miniGame1;
+	SheLongMen miniGame2;
 	Map* gameMap = Monopoly::game->gameMap;
 	
 	switch (chance) {
 	case 0:
 		std::cout << "意外走進賭馬場\n";
 		Monopoly::WaitForEnter();
-		miniGame.init(p);
-		miniGame.gameStart();
+		miniGame1.init(p);
+		miniGame1.gameStart();
 		break;
 	case 1:
 		std::cout << "受傷暫停行動1次\n";
@@ -261,7 +262,7 @@ void ChanceTile::OnLand(Player* p)
 		break;
 	case 3:
 		std::cout << "中了樂透小獎，獲得 300 元\n";
-		bank.Pay(p, 300);
+		Monopoly::bank.Pay(p, 300);
 		break;
 	case 4:
 		std::cout << "獲得免費升級一處土地的機會\n";
@@ -295,16 +296,22 @@ void ChanceTile::OnLand(Player* p)
 		break;
 	case 5:
 		std::cout << "獲得銀行補助金 150 元\n";
-		bank.Pay(p, 150);
+		Monopoly::bank.Pay(p, 150);
 		break;
 	case 6:
 		std::cout << "違反交通規則，罰款 100 元\n";
-		p->Pay(&bank, 100);
+		p->Pay(&Monopoly::bank, 100);
 		break;
 	case 7:
 		std::cout << "食物中毒，住院治療，暫停行動1回合\n";
 		p->inHospital = true;
 		p->hosipitalDay = 1;
+		break;
+	case 8:
+		std::cout << "意外走進賭場\n";
+		Monopoly::WaitForEnter();
+		miniGame2.init(p);
+		miniGame2.gameStart();
 		break;
 	}
 }
@@ -322,11 +329,11 @@ void FateTile::OnLand(Player* p)
 	switch (fate) {
 	case 0:
 		std::cout << "地上撿到錢包，失主贈100元\n";
-		bank.Pay(p, 100);
+		Monopoly::bank.Pay(p, 100);
 		break;
 	case 1:
 		std::cout << "耳機掉到水溝，損失100元\n";
-		p->Pay(&bank, 100);
+		p->Pay(&Monopoly::bank, 100);
 		break;
 	case 2:
 		std::cout << "感冒了，需要休息一回合\n";
@@ -340,23 +347,23 @@ void FateTile::OnLand(Player* p)
 		break;
 	case 4:
 		std::cout << "投資股票獲利，獲得 200 元\n";
-		bank.Pay(p, 200);
+		Monopoly::bank.Pay(p, 200);
 		break;
 	case 5:
 		std::cout << "所得稅申報，需繳納 150 元\n";
-		p->Pay(&bank, 150);
+		p->Pay(&Monopoly::bank, 150);
 		break;
 	case 6:
 		std::cout << "朋友還錢，獲得 120 元\n";
-		bank.Pay(p, 120);
+		Monopoly::bank.Pay(p, 120);
 		break;
 	case 7:
 		std::cout << "手機故障維修，花費 80 元\n";
-		p->Pay(&bank, 80);
+		p->Pay(&Monopoly::bank, 80);
 		break;
 	case 8:
 		std::cout << "生日收到禮金，獲得 50 元\n";
-		bank.Pay(p, 50);
+		Monopoly::bank.Pay(p, 50);
 		break;
 	case 9:
 		std::cout << "突發高燒，需要住院，暫停行動1回合\n";
@@ -377,13 +384,16 @@ void MiniGameTile::OnLand(Player* p)
 		"賭馬",
 		"射龍門"
 		});
-	HorseRacing miniGame;
+	HorseRacing miniGame1;
+	SheLongMen miniGame2;
 	switch (choice) {
 	case 0:
-		miniGame.init(p);
-		miniGame.gameStart();
+		miniGame1.init(p);
+		miniGame2.gameStart();
 		break;
 	case 1:
+		miniGame2.init(p);
+		miniGame2.gameStart();
 		break;
 	}
 }

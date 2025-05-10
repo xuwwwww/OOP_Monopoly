@@ -3,9 +3,13 @@
 #include <string>
 
 class Game;
+class Player;
 
 namespace Monopoly {
     extern Game* game;
+    extern Player bank;
+
+
     enum class Color {
         Red = 31,
         Green = 32,
