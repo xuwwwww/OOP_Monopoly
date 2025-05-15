@@ -7,58 +7,109 @@
 #include <iostream>
 
 namespace Monopoly {
-    Game* game = nullptr;
-    Player bank("bank", "black", 1 << 30);
+	Game* game = nullptr;
+	Player bank("bank", "black", 1 << 30);
 }
 
-void Monopoly::setTextColor(const Color& color) {
+std::string Monopoly::GetColorCode(std::string colorName) {
+	if (colorName == "red")		return "\033[31m";
+	if (colorName == "green")	return "\033[32m";
+	if (colorName == "yellow")	return "\033[33m";
+	if (colorName == "blue")	return "\033[34m";
+	return "\033[0m"; // 預設
+}
+
+std::string Monopoly::GetBackgroundColorCode(std::string color) {
+	if (color == "red")        return "\033[41;37m";
+	if (color == "green")      return "\033[42;37m";
+	if (color == "yellow")     return "\033[43;30m";
+	if (color == "blue")       return "\033[44;37m";
+	if (color == "cyan")       return "\033[46;30m";
+	if (color == "purple")     return "\033[48;2;128;0;128m\033[37m";
+	if (color == "orange")     return "\033[48;2;255;140;0m\033[37m";
+	if (color == "teal")       return "\033[48;2;0;128;128m\033[37m";
+	if (color == "brown")      return "\033[48;2;139;69;19m\033[37m";
+	if (color == "gray")   return "\033[100;37m";
+	return "\033[0m"; // 預設
+}
+
+void Monopoly::SetTextColor(const Color& color) {
 	printf("\033[%dm", color);
 }
 
-void Monopoly::setBackgroundColor(const BackgroundColor& color) {
-    printf("\033[;%dm", color);
+void Monopoly::SetBackgroundColor(const BackgroundColor& color) {
+	printf("\033[;%dm", color);
 }
 
-int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::string>& options, bool withMap) {
-    int selected = 0;
+void Monopoly::UpdateScreen() {
+	system("cls");
+	game->PrintMapStatus();
+	game->PrintPlayerStatus();
+}
 
-    while (true) {
-        if (withMap) game->Clear();
-        else system("cls");
-        
-        std::cout << question << "\n\n";
-        for (size_t i = 0; i < options.size(); ++i) {
-            if (static_cast<int>(i) == selected)
-                std::cout << " > " << "【" << options[i] << "】" << "\n";
-            else
-                std::cout << "   " << "【" << options[i] << "】" << "\n";
-        }
+int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::string>& options, bool withMap, bool cmd) {
+	int selected = 0;
 
-        int key = _getch();
-        if (key == 224) {
-            key = _getch();
-            if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
-            if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
-        }
-        else if (key == '\r') {
-            return selected;
-        }
-    }
+	while (_kbhit()) _getch();
+
+	while (true) {
+		if (withMap) game->Clear();
+		else {
+			system("cls");
+			game->PrintMapStatus();
+			game->PrintPlayerStatus();
+		}
+
+		std::cout << question << "\n\n";
+		for (size_t i = 0; i < options.size(); ++i) {
+			if (static_cast<int>(i) == selected)
+				std::cout << " > " << "【" << options[i] << "】" << "\n";
+			else
+				std::cout << "   " << "【" << options[i] << "】" << "\n";
+		}
+
+		int key = _getch();
+		if (key == 224) {
+			key = _getch();
+			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
+			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
+		}
+		else if (key == '\r') {
+			if (cmd) {
+				// 改為詢問是否輸入指令
+
+				std::string input;
+				std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
+				std::getline(std::cin, input);
+
+				if (!input.empty() && input[0] == '/') {
+					if (game->HandleHiddenCommand(input))
+						return -1;
+					continue; // 顯示畫面讓使用者重新選擇
+				}
+				else {
+					// 空字串代表按下 Enter，不輸入指令
+					return selected;
+				}
+			}
+			else return selected;
+		}
+	}
 }
 
 void Monopoly::WaitForEnter() {
-    std::cout << "\n按下 Enter 鍵繼續...";
-    while (_getch() != '\r');
+	std::cout << "\n按下 Enter 鍵繼續...";
+	while (_getch() != '\r');
 }
 
 void Monopoly::clearScreen() {
-    system("cls");
+	system("cls");
 }
 
 void Monopoly::sleepMS(const int& ms) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+	std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void Monopoly::sleepS(const int& s) {
-    std::this_thread::sleep_for(std::chrono::seconds(s));
+	std::this_thread::sleep_for(std::chrono::seconds(s));
 }

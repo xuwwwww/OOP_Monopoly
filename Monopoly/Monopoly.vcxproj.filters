@@ -33,6 +33,15 @@
     <ClInclude Include="Item.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="HorseRacing.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="Monopoly.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="SheLongMen.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -54,6 +63,15 @@
       <Filter>來源檔案</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="HorseRacing.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="Monopoly.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="SheLongMen.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
   </ItemGroup>

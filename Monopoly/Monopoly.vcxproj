@@ -141,18 +141,24 @@
   <ItemGroup>
     <ClInclude Include="CommandHandler.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="HorseRacing.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Map.h" />
+    <ClInclude Include="Monopoly.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="SheLongMen.h" />
     <ClInclude Include="Tile.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommandHandler.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="HorseRacing.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Monopoly.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SheLongMen.cpp" />
     <ClCompile Include="Tile.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

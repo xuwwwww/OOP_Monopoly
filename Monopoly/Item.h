@@ -13,6 +13,7 @@ public:
 
 // ControlDiceItem
 class ControlDiceItem : public Item {
+
 public:
 	void Use(Player* p) override;
 	std::string GetName()  override { return "±±¨î»ë¤l"; }

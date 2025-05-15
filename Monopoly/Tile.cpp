@@ -13,7 +13,7 @@ std::vector<std::vector<std::string>> houses = {
 		"  /  \\",
 		" /____\\",
 		" | [] |",
-		" |____|"
+		" |____|\n"
 	},
 	{
 		"  _____",
@@ -28,16 +28,16 @@ std::vector<std::vector<std::string>> houses = {
 		"  | [] [] |",
 		"  |  __   |",
 		" /| |__| |\\ ",
-		"/_|______|_\\"
+		"/_|______|_\\\n"
 	},
 	{
 		"  _______",
 		" / _____ \\",
-		"| |SHOP| |",
+		"| |SHOP | |",
 		"| |_____| |",
 		"|  ___    |",
 		"| |___|[] |",
-		"|_________|"
+		"|_________|\n"
 	},
 	{
 		"  _______",
@@ -46,9 +46,11 @@ std::vector<std::vector<std::string>> houses = {
 		"| |_____| |",
 		"|   ___   |",
 		"|  |___|  |",
-		"|_________|"
+		"|_________|\n"
 	},
-	{}
+	{
+
+	}
 };
 
 string getHouse(int level) {
@@ -114,8 +116,10 @@ void PropertyTile::SetOwner(Player* p)
 
 void PropertyTile::OnLand(Player* p)
 {
+	Monopoly::UpdateScreen();
+
 	if (owner == NULL) {
-		std::string question = "抵達" + name + "！\n土地價格為 " + std::to_string(price) + " 元\n你現在有 " + std::to_string(p->GetMoney()) + " 元\n是否要購買？";
+		std::string question = "抵達 " + name + "！\n土地價格為 " + std::to_string(price) + " 元\n你現在有 " + std::to_string(p->GetMoney()) + " 元，是否要購買？";
 		std::vector<std::string> options = {
 		"購買",
 		"放棄"
@@ -160,11 +164,11 @@ void PropertyTile::OnLand(Player* p)
 		if (level == 1) rent = price * 2;
 		else if (level == 2) rent = price * 3;
 
+		p->Pay(owner, rent);
+
 		std::cout << "此土地為 " << owner->GetName() << " 的土地，需支付 "
 			<< rent << " 元給 " << owner->GetName() << "。\n";
-		std::cout << "你現在有 " << p->GetMoney() << " 元\n";
-		
-		p->Pay(owner, rent);
+		std::cout << "支付後剩餘 " << p->GetMoney() << " 元\n";
 	}
 }
 
@@ -176,38 +180,62 @@ ShopTile::ShopTile()
 
 void ShopTile::OnLand(Player* p)
 {
+	std::cout << "玩家 " << p->GetName() << " 進入商店\n";
+
 	std::string question = "抵達商店！是否進入商店？";
 	std::vector<std::string> options = {
-	"是",
-	"否"
+		"是",
+		"否"
 	};
+
 	int choice = Monopoly::GetUserChoice(getHouse(3) + question, options);
-	
-	if (choice) return;
+	if (choice == 1) return;
+
+	// 商品列表
+	std::vector<std::string> itemNames = {
+		"控制骰子, 300元"
+	};
+	std::vector<int> itemPrices = {
+		300
+	};
+
+	// 記錄商品是否已購買
+	std::vector<bool> purchased(itemNames.size(), false);
 
 	do {
-		std::string welcome = "歡迎光臨商店!";
-		std::vector<std::string> goods = {
-			"控制骰子, 300元",
-			"離開"
-		};
-		choice = Monopoly::GetUserChoice(getHouse(3) + welcome, goods);
+		std::vector<std::string> goods;
 
-		switch (choice) {
-		case 0:
-			if (p->BuyProperty(300)) {
-				p->AddItem(new ControlDiceItem());
-				cout << "購買控制骰子成功!\n";
-			}
-			Monopoly::WaitForEnter();
-			break;
-		case 1:
-			break;
-		default:
-			break;
+		for (size_t i = 0; i < itemNames.size(); ++i) {
+			if (purchased[i])
+				goods.push_back(itemNames[i] + "（已購買）");
+			else
+				goods.push_back(itemNames[i]);
 		}
 
-	} while (choice != 1);
+		goods.push_back("離開");
+
+		std::string welcome = "歡迎光臨商店!";
+		choice = Monopoly::GetUserChoice(getHouse(3) + welcome, goods);
+
+		// 檢查是否選擇離開
+		if (choice == static_cast<int>(goods.size()) - 1) break;
+
+		// 確保索引有效
+		if (choice >= 0 && choice < itemNames.size()) {
+			if (purchased[choice]) {
+				std::cout << "此商品已經購買過，無法再次購買。\n";
+			}
+			else if (p->BuyProperty(itemPrices[choice])) {
+				p->AddItem(new ControlDiceItem());
+				purchased[choice] = true;
+				std::cout << "購買成功！\n";
+			}
+			else {
+				std::cout << "餘額不足，購買失敗。\n";
+			}
+		}
+		Monopoly::WaitForEnter();
+	} while (true);
 }
 
 HospitalTile::HospitalTile()
@@ -217,6 +245,8 @@ HospitalTile::HospitalTile()
 
 void HospitalTile::OnLand(Player* p)
 {
+	Monopoly::UpdateScreen();
+
 	std::cout << getHouse(4);
 	if (!p->inHospital) {
 		std::cout << "進醫院休息三天！";
@@ -242,7 +272,7 @@ void ChanceTile::OnLand(Player* p)
 	HorseRacing miniGame1;
 	SheLongMen miniGame2;
 	Map* gameMap = Monopoly::game->gameMap;
-	
+
 	switch (chance) {
 	case 0:
 		std::cout << "意外走進賭馬場\n";
@@ -266,7 +296,7 @@ void ChanceTile::OnLand(Player* p)
 		break;
 	case 4:
 		std::cout << "獲得免費升級一處土地的機會\n";
-		
+
 		for (int i = 0; i < 28; i++) {
 			Tile* tile = gameMap->GetTileAt(i);
 			PropertyTile* propTile = dynamic_cast<PropertyTile*>(tile);
@@ -278,18 +308,20 @@ void ChanceTile::OnLand(Player* p)
 				}
 			}
 		}
-		
+
 		if (ownedProperties.empty()) {
 			std::cout << "你沒有可升級的土地！\n";
-		} else {
+		}
+		else {
 			propertyNames.push_back("放棄升級");
 			int choice = Monopoly::GetUserChoice(getHouse(4) + "選擇要免費升級的土地：", propertyNames);
-			
+
 			if (choice < static_cast<int>(ownedProperties.size())) {
 				PropertyTile* selectedProperty = ownedProperties[choice];
 				selectedProperty->Upgrade();
 				std::cout << "土地升級成功！\n";
-			} else {
+			}
+			else {
 				std::cout << "你選擇放棄免費升級的機會。\n";
 			}
 		}

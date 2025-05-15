@@ -41,9 +41,6 @@ public:
 	 */
 	void EndGame();
 
-
-	void HandlePlayerAction(Player* p);
-
 	/**
 	 * 清除畫面，並重新印出地圖與玩家資訊
 	 */
@@ -93,6 +90,8 @@ public:
 	 * @param creditor 債權玩家（導致破產的玩家）
 	 */
 	void HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor);
+
+	bool HandleHiddenCommand(const std::string& cmd);
 
 	Player* getCurrentPlayer();
 
