@@ -1,2 +1,6 @@
-﻿  Monopoly.cpp
+﻿  Game.cpp
+C:\Users\user\Desktop\N+++++\HW\Monopoly\Monopoly\Game.cpp(378,20): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\Monopoly\Monopoly\Game.cpp(1030,21): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\Monopoly\Monopoly\Game.cpp(1106,30): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\Monopoly\Monopoly\Game.cpp(1168): warning C4715: 'Game::HandleHiddenCommand': 不是所有控制路徑都傳回值
   Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\Monopoly\Debug\Monopoly.exe

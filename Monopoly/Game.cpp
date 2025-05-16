@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "Map.h"
 #include "Monopoly.h"
+#include "HorseRacing.h"
+#include "SheLongMen.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -994,6 +996,7 @@ Player* Game::getCurrentPlayer() {
 	return players[currentPlayerIdx];
 }
 
+// return false 表玩家得以繼續行動，return true 表玩家回合結束
 bool Game::HandleHiddenCommand(const std::string& input) {
 	std::istringstream iss(input);
 	std::string cmd;
@@ -1003,9 +1006,6 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 
 	if (cmd == "/help" || cmd == "/list") {
 		std::cout << "可用指令有：/move /get /give /card /gamestate /info /minigame /refresh\n";
-	}
-	else if (cmd == "/gamestate") {
-
 	}
 	else if (cmd == "/move") {
 		int steps;
@@ -1021,6 +1021,144 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 			Monopoly::WaitForEnter();
 			return false;
 		}
+	}
+	else if (cmd == "/get") {
+	}
+	else if (cmd == "/give") {
+		std::vector<std::string> names;
+
+		for (int i = 0; i < players.size(); i++) {
+			std::string name = "玩家" + std::string(1, 'A' + i) + ": " + players[i]->GetName();
+			if (p == players[i])name += "（不得選擇自己）";
+			names.push_back(name);
+		}
+
+		int choice = Monopoly::GetUserChoice("", names);
+		Player* chosenP = p;
+
+		switch (choice) {
+		case 0:
+			if (p == players[0]) {
+				std::cout << "不能選擇自己唷！\n";
+				Monopoly::WaitForEnter();
+				return false;
+			}
+			chosenP = players[0];
+			break;
+		case 1:
+			if (p == players[1]) {
+				std::cout << "不能選擇自己唷！\n";
+				Monopoly::WaitForEnter();
+				return false;
+			}
+			chosenP = players[1];
+			break;
+		case 2:
+			if (p == players[2]) {
+				std::cout << "不能選擇自己唷！\n";
+				Monopoly::WaitForEnter();
+				return false;
+			}
+			chosenP = players[2];
+			break;
+		case 3:
+			if (p == players[3]) {
+				std::cout << "不能選擇自己唷！\n";
+				Monopoly::WaitForEnter();
+				return false;
+			}
+			chosenP = players[3];
+			break;
+		}
+
+		int money;
+		std::cout << "輸入給予金額：";
+		std::cin >> money;
+
+		p->Pay(chosenP, money);
+
+		std::cout << "執行指令：給予玩家 " << chosenP->GetName() << " " << to_string(money) << " 元。";
+
+		Monopoly::WaitForEnter();
+		return false;
+	}
+	else if (cmd == "/card") {
+		// 商品列表
+		std::vector<std::string> itemNames = {
+			"控制骰子"
+		};
+
+		do {
+			std::vector<std::string> goods;
+
+			for (size_t i = 0; i < itemNames.size(); ++i) {
+				goods.push_back(itemNames[i]);
+			}
+
+			goods.push_back("離開");
+
+			int choice = Monopoly::GetUserChoice("", goods);
+
+			// 檢查是否選擇離開
+			if (choice == static_cast<int>(goods.size()) - 1) break;
+
+			// 確保索引有效
+			if (choice >= 0 && choice < itemNames.size()) {
+				p->AddItem(new ControlDiceItem());
+				std::cout << "取得指定卡片！\n";
+			}
+
+			Monopoly::WaitForEnter();
+		} while (true);
+
+		return false;
+	}
+	else if (cmd == "/gamestate") {
+		gameOver = true;
+	}
+	else if (cmd == "/info") {
+
+	}
+	else if (cmd == "/minigame") {
+		int game;
+		if (iss >> game) {
+			if (game == 1) {
+				HorseRacing miniGame1;
+
+				Monopoly::UpdateScreen();
+				std::cout << "意外走進賭馬場\n";
+				Monopoly::WaitForEnter();
+				miniGame1.init(p);
+				miniGame1.gameStart();
+
+				return true;
+			}
+			else if (game == 2) {
+				SheLongMen miniGame2;
+
+				Monopoly::UpdateScreen();
+				std::cout << "意外走進賭場\n";
+				Monopoly::WaitForEnter();
+				miniGame2.init(p);
+				miniGame2.gameStart();
+
+				return true;
+			}
+			else {
+				std::cout << "格式錯誤！請使用 /minigame [1 or 2]\n";
+				Monopoly::WaitForEnter();
+				return false;
+			}
+		}
+		else {
+			std::cout << "格式錯誤！請使用 /minigame [1 or 2]\n";
+			Monopoly::WaitForEnter();
+			return false;
+		}
+	}
+	else if (cmd == "/refresh") {
+		Monopoly::UpdateScreen();
+		return false;
 	}
 	else {
 		std::cout << "無效指令：" << cmd << "\n";
