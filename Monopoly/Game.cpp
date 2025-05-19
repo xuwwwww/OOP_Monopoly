@@ -3,6 +3,7 @@
 #include "Monopoly.h"
 #include "HorseRacing.h"
 #include "SheLongMen.h"
+#include "CommandHandler.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -993,7 +994,10 @@ void Game::HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor)
 }
 
 Player* Game::getCurrentPlayer() {
-	return players[currentPlayerIdx];
+	if (currentPlayerIdx >= 0 && currentPlayerIdx < static_cast<int>(players.size())) {
+		return players[currentPlayerIdx];
+	}
+	return nullptr;
 }
 
 // return false 表玩家得以繼續行動，return true 表玩家回合結束
@@ -1165,4 +1169,20 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		Monopoly::WaitForEnter();
 		return false;
 	}
+}
+
+bool Game::processCommand(std::shared_ptr<Player> player, const std::string& input) {
+	if (input.empty() || input[0] != '/') {
+		return false;
+	}
+
+	// The first time we process a command, initialize the command handler
+	static bool initialized = false;
+	if (!initialized) {
+		commandHandler.Initialize();
+		commandHandler.SetGameReference(this);
+		initialized = true;
+	}
+
+	return commandHandler.ProcessCommand(player, input);
 }

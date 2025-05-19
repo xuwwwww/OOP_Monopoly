@@ -1,0 +1,64 @@
+{
+  "commands": [
+    {
+      "name": "move",
+      "description": "Move player to specified position",
+      "usage": "/move <position>",
+      "example": "/move 5, /move to USA"
+    },
+    {
+      "name": "get",
+      "description": "Get money from system",
+      "usage": "/get <amount> or /get <player> <amount>",
+      "example": "/get 1000, /get Bob 500"
+    },
+    {
+      "name": "give",
+      "description": "Give money to another player",
+      "usage": "/give <player> <amount>",
+      "example": "/give Alice 300"
+    },
+    {
+      "name": "card",
+      "description": "Get specified card",
+      "usage": "/card <card_name>",
+      "example": "/card Rocket Card"
+    },
+    {
+      "name": "gamestate",
+      "description": "Force change current game state",
+      "usage": "/gamestate <state>",
+      "example": "/gamestate MOVED"
+    },
+    {
+      "name": "info",
+      "description": "Show all players information",
+      "usage": "/info",
+      "example": "/info"
+    },
+    {
+      "name": "refresh",
+      "description": "Force redraw map",
+      "usage": "/refresh",
+      "example": "/refresh"
+    },
+    {
+      "name": "list",
+      "description": "Show all available commands",
+      "usage": "/list [-a]",
+      "example": "/list -a"
+    },
+    {
+      "name": "help",
+      "description": "Show all available commands",
+      "usage": "/help [-a]",
+      "example": "/help -a"
+    },
+    {
+      "name": "minigame",
+      "description": "Enter minigame menu directly",
+      "usage": "/minigame",
+      "example": "/minigame"
+    }
+  ]
+}

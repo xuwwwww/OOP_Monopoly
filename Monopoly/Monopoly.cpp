@@ -5,6 +5,7 @@
 #include <ctime>
 #include <thread>
 #include <iostream>
+#include <memory>
 
 namespace Monopoly {
 	Game* game = nullptr;
@@ -68,24 +69,86 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 				std::cout << "   " << "【" << options[i] << "】" << "\n";
 		}
 
+		std::cout << "\n請使用上下鍵選擇，按 Enter 確認，或按 / 輸入指令" << std::endl;
+
 		int key = _getch();
 		if (key == 224) {
 			key = _getch();
 			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
 			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
 		}
+		else if (key == '/') {
+			// Command input mode
+			std::string input = "/";
+			std::cout << "\n指令：" << input;
+			
+			// Keep reading input until Enter is pressed
+			while (true) {
+				int ch = _getch();
+				if (ch == '\r') { // Enter key
+					break;
+				}
+				else if (ch == '\b') { // Backspace
+					if (input.length() > 1) { // Don't delete the '/'
+						input.pop_back();
+						std::cout << "\b \b"; // Erase character on screen
+					}
+				}
+				else if (ch >= 32 && ch <= 126) { // Printable characters
+					input += (char)ch;
+					std::cout << (char)ch;
+				}
+			}
+			
+			std::cout << std::endl;
+			
+			// Convert current player to shared_ptr for command processing
+			Player* currentPlayer = game->getCurrentPlayer();
+			if (currentPlayer) {
+				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter - we don't own the player
+				
+				// Process the command
+				if (game->processCommand(playerPtr, input)) {
+					// Command was processed, wait for user to acknowledge
+					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
+					_getch();
+				}
+				else {
+					// Command failed
+					std::cout << "\n無效的指令。按任意鍵繼續..." << std::endl;
+					_getch();
+				}
+			}
+			
+			// Continue with the menu
+			continue;
+		}
 		else if (key == '\r') {
 			if (cmd) {
 				// 改為詢問是否輸入指令
-
 				std::string input;
 				std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
 				std::getline(std::cin, input);
 
 				if (!input.empty() && input[0] == '/') {
+					// Convert current player to shared_ptr for command processing
+					Player* currentPlayer = game->getCurrentPlayer();
+					if (currentPlayer) {
+						std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter
+						
+						// Try to process the command with our new system first
+						if (game->processCommand(playerPtr, input)) {
+							// Wait for user acknowledgment
+							std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
+							_getch();
+							continue;
+						}
+					}
+					
+					// Fall back to old command handler if our new system doesn't handle it
 					if (game->HandleHiddenCommand(input))
 						return -1;
-					continue; // 顯示畫面讓使用者重新選擇
+					continue;
 				}
 				else {
 					// 空字串代表按下 Enter，不輸入指令

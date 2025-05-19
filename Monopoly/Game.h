@@ -2,8 +2,10 @@
 
 #include "Player.h"
 #include "Map.h"
+#include "CommandHandler.h"
 #include <fstream>
 #include <string>
+#include <memory>
 
 enum class State { INIT, START, MOVED, ROUND_END, FINISH };
 
@@ -91,8 +93,25 @@ public:
 	 */
 	void HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor);
 
+	/**
+	 * 處理隱藏指令
+	 * @param cmd 指令字串
+	 * @return 是否成功處理
+	 */
 	bool HandleHiddenCommand(const std::string& cmd);
 
+	/**
+	 * 處理玩家輸入的指令（/開頭）
+	 * @param player 執行指令的玩家
+	 * @param input 指令字串
+	 * @return 是否成功處理
+	 */
+	bool processCommand(std::shared_ptr<Player> player, const std::string& input);
+
+	/**
+	 * 取得當前玩家
+	 * @return 當前玩家指標
+	 */
 	Player* getCurrentPlayer();
 
 	Map* gameMap;					// 地圖物件
@@ -100,6 +119,7 @@ private:
 	std::vector<Player*>players;	// 所有玩家指標
 	int currentPlayerIdx;			// 目前回合的玩家索引
 	bool gameOver;					// 是否結束遊戲
+	CommandHandler commandHandler;  // 指令處理器
 
 	/**
 	 * 輔助函式：印出兩顆骰子的 ASCII 圖案
