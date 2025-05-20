@@ -52,6 +52,9 @@ private:
     std::vector<std::string> SplitCommand(const std::string& input);
     std::string TrimString(const std::string& str);
     
+    // Helper function to find a player by name
+    Player* FindPlayerByName(const std::string& name);
+    
     // Command handlers
     bool HandleMoveCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args);
     bool HandleGetCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args);

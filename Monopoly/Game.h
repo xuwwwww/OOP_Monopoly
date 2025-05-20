@@ -11,6 +11,9 @@ enum class State { INIT, START, MOVED, ROUND_END, FINISH };
 
 class Game
 {
+	// Make CommandHandler a friend class so it can access private members
+	friend class CommandHandler;
+
 public:
 	/**
 	 * 建構子，初始化遊戲狀態（玩家索引、遊戲是否結束）
@@ -115,8 +118,9 @@ public:
 	Player* getCurrentPlayer();
 
 	Map* gameMap;					// 地圖物件
+	std::vector<Player*> players;	// 所有玩家指標
+
 private:
-	std::vector<Player*>players;	// 所有玩家指標
 	int currentPlayerIdx;			// 目前回合的玩家索引
 	bool gameOver;					// 是否結束遊戲
 	CommandHandler commandHandler;  // 指令處理器

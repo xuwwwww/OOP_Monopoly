@@ -2,63 +2,77 @@
   "commands": [
     {
       "name": "move",
-      "description": "Move player to specified position",
-      "usage": "/move <position>",
+      "description": "移動玩家到指定位置",
+      "usage": "/move <位置>",
       "example": "/move 5, /move to USA"
     },
     {
       "name": "get",
-      "description": "Get money from system",
-      "usage": "/get <amount> or /get <player> <amount>",
+      "description": "從系統獲得金錢",
+      "usage": "/get <金額> 或 /get <玩家> <金額>",
       "example": "/get 1000, /get Bob 500"
     },
     {
       "name": "give",
-      "description": "Give money to another player",
-      "usage": "/give <player> <amount>",
+      "description": "給予指定玩家金錢",
+      "usage": "/give <玩家> <金額>",
       "example": "/give Alice 300"
     },
     {
       "name": "card",
-      "description": "Get specified card",
-      "usage": "/card <card_name>",
-      "example": "/card Rocket Card"
+      "description": "獲得指定卡片",
+      "usage": "/card <卡片名稱>",
+      "example": "/card 控制骰子"
     },
     {
       "name": "gamestate",
-      "description": "Force change current game state",
-      "usage": "/gamestate <state>",
+      "description": "強制更改遊戲狀態",
+      "usage": "/gamestate <狀態>",
       "example": "/gamestate MOVED"
     },
     {
       "name": "info",
-      "description": "Show all players information",
+      "description": "顯示所有玩家信息",
       "usage": "/info",
       "example": "/info"
     },
     {
       "name": "refresh",
-      "description": "Force redraw map",
+      "description": "強制重新繪製地圖",
       "usage": "/refresh",
       "example": "/refresh"
     },
     {
       "name": "list",
-      "description": "Show all available commands",
+      "description": "顯示所有可用指令",
       "usage": "/list [-a]",
       "example": "/list -a"
     },
     {
       "name": "help",
-      "description": "Show all available commands",
+      "description": "顯示所有可用指令",
       "usage": "/help [-a]",
       "example": "/help -a"
     },
     {
       "name": "minigame",
-      "description": "Enter minigame menu directly",
+      "description": "直接進入小遊戲選單",
       "usage": "/minigame",
       "example": "/minigame"
+    }
+  ],
+  "card_types": [
+    {
+      "name": "控制骰子",
+      "description": "選擇骰子點數前進"
+    },
+    {
+      "name": "火箭卡",
+      "description": "指定一名玩家送入醫院兩回合"
+    },
+    {
+      "name": "命運卡",
+      "description": "強制觸發命運事件"
     }
   ]
 }

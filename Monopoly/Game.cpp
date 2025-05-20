@@ -160,7 +160,7 @@ void Game::NextTurn()
 	auto currentPlayer = players[currentPlayerIdx];
 
 	// 如果當前玩家已破產，跳到下一位
-	if (currentPlayer->GetMoney() <= 0) {
+	if (currentPlayer->GetMoney() < 0) {
 		// 換下一位
 		currentPlayerIdx = (currentPlayerIdx + 1) % static_cast<int>(players.size());
 		NextTurn(); // 遞迴呼叫，跳到下一個玩家
@@ -183,10 +183,52 @@ void Game::NextTurn()
 			currentPlayer->hosipitalDay = 0;
 		}
 		else {
-			// 增加住院天數並跳過回合
-			currentPlayer->hosipitalDay++;
-			playerTurnCompleted = true;
-			std::cout << currentPlayer->GetName() << " 仍在住院，無法行動。\n";
+			// 顯示出院選項
+			std::vector<std::string> hospitalOptions = {
+				"擲骰子（擲出4點或以上即可出院）",
+				"支付$50出院費",
+				"乖乖在醫院休養"
+			};
+			
+			std::string hospitalPrompt = "你正在醫院休養，選擇行動：";
+			int hospitalChoice = Monopoly::GetUserChoice(hospitalPrompt, hospitalOptions, true, false);
+			
+			if (hospitalChoice == 0) {
+				// 擲骰嘗試出院
+				int roll = RollDiceWithAsciiAnimation();
+				if (roll >= 4) {
+					// 成功出院
+					std::cout << "擲出了 " << roll << " 點，成功出院！" << std::endl;
+					currentPlayer->inHospital = false;
+					currentPlayer->hosipitalDay = 0;
+				} else {
+					// 失敗，繼續住院
+					std::cout << "擲出了 " << roll << " 點，未達到4點，需繼續住院。" << std::endl;
+					currentPlayer->hosipitalDay++;
+					playerTurnCompleted = true;
+				}
+			}
+			else if (hospitalChoice == 1) {
+				// 支付出院費
+				if (currentPlayer->GetMoney() >= 50) {
+					currentPlayer->BuyProperty(50); // 扣除50元出院費
+					std::cout << currentPlayer->GetName() << " 支付了$50出院費，提前出院！" << std::endl;
+					currentPlayer->inHospital = false;
+					currentPlayer->hosipitalDay = 0;
+				} else {
+					std::cout << "你沒有足夠的錢支付出院費！" << std::endl;
+					// 增加住院天數並跳過回合
+					currentPlayer->hosipitalDay++;
+					playerTurnCompleted = true;
+				}
+			}
+			else {
+				// 選擇繼續住院
+				std::cout << currentPlayer->GetName() << " 選擇繼續在醫院休養。" << std::endl;
+				// 增加住院天數並跳過回合
+				currentPlayer->hosipitalDay++;
+				playerTurnCompleted = true;
+			}
 		}
 	}
 
@@ -197,10 +239,11 @@ void Game::NextTurn()
 			"使用道具",
 			//"作弊"
 		};
+		// 使用true參數表示顯示地圖，但不允許輸入指令
 		int choice = Monopoly::GetUserChoice(question, options, true, true);
 
 		if (choice == 0) {
-			// 進行擲骰
+			// 直接進行擲骰，不顯示額外提示
 			int roll = RollDiceWithAsciiAnimation();
 			currentPlayer->Move(roll, gameMap->getSize());
 			int pos = currentPlayer->GetPosition();
@@ -216,6 +259,9 @@ void Game::NextTurn()
 			if (items.empty()) {
 				std::cout << "你沒有任何道具可以使用！\n";
 				Monopoly::WaitForEnter(); // 顯示訊息後等待玩家按Enter繼續
+				system("cls"); // 清除螢幕
+				PrintMapStatus();
+				PrintPlayerStatus();
 				continue; // 回到玩家行動選單
 			}
 			else {
@@ -266,33 +312,13 @@ void Game::NextTurn()
 		else if (choice == -1) {
 			playerTurnCompleted = true; // 玩家回合完成
 		}
-		//else if (choice == 2) {
-		//	int temp;
-		//	std::cout << "輸入想去的格子: ";
-		//	std::cin >> temp;
-
-		//	if (temp < 0)
-		//		temp = 0;
-
-		//	temp %= gameMap->getSize();
-
-		//	if (currentPlayer->GetPosition() != temp) {
-		//		if (currentPlayer->GetPosition() > temp)
-		//			currentPlayer->Move(gameMap->getSize() - currentPlayer->GetPosition() + temp, gameMap->getSize());
-		//		else
-		//			currentPlayer->Move(temp - currentPlayer->GetPosition(), gameMap->getSize());
-		//	}
-
-		//	gameMap->GetTileAt(temp)->OnLand(currentPlayer);
-		//	playerTurnCompleted = true; // 玩家回合完成
-		//}
 	}
 
 	Monopoly::WaitForEnter();
 	Monopoly::UpdateScreen();
 
 	// 檢查玩家是否破產
-	if (currentPlayer->GetMoney() <= 0) {
+	if (currentPlayer->GetMoney() < 0) {
 		std::cout << currentPlayer->GetName() << " 已破產！\n";
 
 		// 立即檢查是否只剩下一位玩家，如果是則結束遊戲
@@ -316,8 +342,8 @@ bool Game::CheckWinCondition()
 	int lastPlayerIdx = -1;
 
 	for (size_t i = 0; i < players.size(); i++) {
-		// 只有金額等於或小於0才算破產，金額為0不算破產
-		if (players[i]->GetMoney() > 0) {
+		// 只有金額小於0才算破產，金額為0不算破產
+		if (players[i]->GetMoney() >= 0) {
 			activePlayers++;
 			lastPlayerIdx = i;
 		}
@@ -344,11 +370,39 @@ bool Game::CheckWinCondition()
 
 void Game::EndGame()
 {
-	std::cout << "\n遊戲結束，最終資金：" << std::endl;
+	std::cout << "\n遊戲結束！" << std::endl;
+	std::cout << "+====================遊戲結果====================+" << std::endl;
+	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
+	std::cout << "| 排名  | 玩家名稱   | 最終資金  | 狀態          |" << std::endl;
+	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
+	
+	// 建立玩家索引列表並根據金錢排序
+	std::vector<std::pair<int, Player*>> playerRanking;
 	for (size_t i = 0; i < players.size(); i++) {
-		std::cout << players[i]->GetName() << ": $" << players[i]->GetMoney() << std::endl;
+		playerRanking.push_back(std::make_pair(i, players[i]));
 	}
-
+	
+	// 根據金錢由高到低排序
+	std::sort(playerRanking.begin(), playerRanking.end(), 
+			  [](const std::pair<int, Player*>& a, const std::pair<int, Player*>& b) {
+				  return a.second->GetMoney() > b.second->GetMoney();
+			  });
+	
+	// 輸出玩家排名與資訊
+	for (size_t i = 0; i < playerRanking.size(); i++) {
+		Player* p = playerRanking[i].second;
+		std::string colorCode = Monopoly::GetColorCode(p->GetColor());
+		std::string status = (p->GetMoney() < 0) ? "破產" : (i == 0) ? "勝利" : "遊戲結束";
+		
+		std::cout << "| " << std::left << std::setw(5) << (i + 1) 
+				  << " | " << colorCode << std::left << std::setw(10) << p->GetName() << "\033[0m"
+				  << " | " << std::right << std::setw(9) << p->GetMoney() 
+				  << " | " << std::left << std::setw(13) << status << " |" << std::endl;
+	}
+	
+	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
+	std::cout << "\n恭喜 " << playerRanking[0].second->GetName() << " 獲得遊戲勝利！" << std::endl;
+	
 	// 遊戲結束時刪除存檔
 	DeleteSaveGame();
 }
@@ -995,7 +1049,7 @@ void Game::HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor)
 
 Player* Game::getCurrentPlayer() {
 	if (currentPlayerIdx >= 0 && currentPlayerIdx < static_cast<int>(players.size())) {
-		return players[currentPlayerIdx];
+	return players[currentPlayerIdx];
 	}
 	return nullptr;
 }
@@ -1027,6 +1081,58 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		}
 	}
 	else if (cmd == "/get") {
+		// Parse player name and amount
+		std::string playerName;
+		int amount;
+		
+		// Check if there's a player name
+		if (iss >> playerName) {
+			// If the first argument is a number, it's just an amount
+			try {
+				amount = std::stoi(playerName);
+				// This is just /get <amount>
+				p->BuyProperty(-amount); // Negative price means adding money
+				std::cout << "已給予自己 $" << amount << " 元。\n";
+			}
+			catch (const std::exception&) {
+				// This is /get <player> <amount>
+				if (iss >> amount) {
+					// Find the target player
+					Player* targetPlayer = nullptr;
+					
+					// Special case for bank
+					if (playerName == "bank") {
+						targetPlayer = &Monopoly::bank;
+					}
+					else {
+						// Search through all players
+						for (auto& player : players) {
+							if (player->GetName() == playerName) {
+								targetPlayer = player;
+								break;
+							}
+						}
+					}
+					
+					if (!targetPlayer) {
+						std::cout << "找不到玩家：" << playerName << std::endl;
+					}
+					else {
+						targetPlayer->BuyProperty(-amount);
+						std::cout << "已給予 " << playerName << " $" << amount << " 元。\n";
+					}
+				}
+				else {
+					std::cout << "格式錯誤！請使用 /get <金額> 或 /get <玩家> <金額>\n";
+				}
+			}
+		}
+		else {
+			std::cout << "格式錯誤！請使用 /get <金額> 或 /get <玩家> <金額>\n";
+		}
+		
+		Monopoly::WaitForEnter();
+		return false;
 	}
 	else if (cmd == "/give") {
 		std::vector<std::string> names;
@@ -1121,7 +1227,10 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		gameOver = true;
 	}
 	else if (cmd == "/info") {
-
+		// Display information about all players
+		PrintPlayerStatus();
+		Monopoly::WaitForEnter();
+		return false;
 	}
 	else if (cmd == "/minigame") {
 		int game;

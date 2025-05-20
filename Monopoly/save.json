@@ -1,0 +1,199 @@
+{
+  "currentPlayerIdx": 0,
+  "playerCount": 2,
+  "map": {
+    "size": 28,
+    "tiles": [
+      {
+        "index": 0,
+        "name": "START",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 1,
+        "name": "USA",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 2,
+        "name": "Fate",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 3,
+        "name": "France",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 4,
+        "name": "Item Shop",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 5,
+        "name": "Japan",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 6,
+        "name": "Mexico",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 7,
+        "name": "Sweden",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 8,
+        "name": "Germany",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 9,
+        "name": "UK",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 10,
+        "name": "Chance",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 11,
+        "name": "Canada",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 12,
+        "name": "Australia",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 13,
+        "name": "Egypt",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 14,
+        "name": "Italy",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 15,
+        "name": "Hospital",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 16,
+        "name": "Fate",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 17,
+        "name": "Spain",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 18,
+        "name": "China",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 19,
+        "name": "Turkey",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 20,
+        "name": "Korea",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 21,
+        "name": "Brazil",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 22,
+        "name": "Uganda",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 23,
+        "name": "Russia",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 24,
+        "name": "Chance",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 25,
+        "name": "India",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 26,
+        "name": "England",
+        "ownerIdx": -1,
+        "level": 0
+      },
+      {
+        "index": 27,
+        "name": "Africa",
+        "ownerIdx": -1,
+        "level": 0
+      }
+    ]
+  },
+  "players": [
+    {
+      "name": "a",
+      "color": "red",
+      "money": 1000,
+      "position": 0,
+      "inHospital": false,
+      "hospitalDay": 0,
+      "items": [
+      ]
+    },
+    {
+      "name": "d",
+      "color": "yellow",
+      "money": 1000,
+      "position": 0,
+      "inHospital": false,
+      "hospitalDay": 0,
+      "items": [
+      ]
+    }
+  ]
+}

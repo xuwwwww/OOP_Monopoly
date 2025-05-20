@@ -69,7 +69,11 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 				std::cout << "   " << "【" << options[i] << "】" << "\n";
 		}
 
-		std::cout << "\n請使用上下鍵選擇，按 Enter 確認，或按 / 輸入指令" << std::endl;
+		if (cmd) {
+			std::cout << "\n請使用上下鍵選擇，按 Enter 確認，或按 / 輸入指令" << std::endl;
+		} else {
+			std::cout << "\n請使用上下鍵選擇，按 Enter 確認" << std::endl;
+		}
 
 		int key = _getch();
 		if (key == 224) {
@@ -125,6 +129,11 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 		}
 		else if (key == '\r') {
 			if (cmd) {
+				// 判斷是否是擲骰子選項，如果是則直接返回
+				if (options.size() > 0 && selected == 0 && options[0] == "進行擲骰") {
+					return selected;
+				}
+				
 				// 改為詢問是否輸入指令
 				std::string input;
 				std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";

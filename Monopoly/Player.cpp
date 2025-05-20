@@ -112,11 +112,11 @@ void Player::Pay(Player* other, int amount)
 	if (other && other->GetName() == "bank") {
 		// 支付給銀行，只需減少自己的金額
 		if (money < amount) {
-			// 注意：此處是"被動支付"，金額不足導致餘額小於0才算破產
+			// 注意：此處是"被動支付"，金額不足導致餘額為0不算破產
 			std::cout << name << " 資金不足，只能支付 " << money << " 元給銀行。\n";
 			int oldMoney = money;
 			money = 0; // 設為0，而不是負數
-			std::cout << name << " 已支付全部金額 " << oldMoney << " 元並破產！\n";
+			std::cout << name << " 已支付全部金額 " << oldMoney << " 元！\n";
 
 			// 檢查遊戲是否應該結束（破產後只剩1名玩家）
 			if (gameInstance) {
@@ -146,7 +146,7 @@ void Player::Pay(Player* other, int amount)
 
 	// 一般玩家間交易 - 被動支付
 	if (money < amount) {
-		// 如果沒有足夠的錢，只支付剩餘的金額，且破產
+		// 如果沒有足夠的錢，只支付剩餘的金額，錢為0不算破產
 		std::cout << name << " 資金不足，只能支付 " << money << " 元。\n";
 
 		// 確保收款方不會溢位
@@ -159,7 +159,7 @@ void Player::Pay(Player* other, int amount)
 		}
 
 		money = 0; // 設為0，表示已用完所有金錢
-		std::cout << name << " 無法完成支付，已破產！\n";
+		std::cout << name << " 無法完成支付！\n";
 
 		// 當玩家破產時（且是因為付款給其他玩家），轉移所有地產給債主
 		if (other && gameInstance) {

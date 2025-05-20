@@ -16,6 +16,22 @@ class ControlDiceItem : public Item {
 
 public:
 	void Use(Player* p) override;
-	std::string GetName()  override { return "控制骰子"; }
-	std::string GetDescription()  override { return "選擇骰子點數前進。"; }
+	std::string GetName()  override { return "Control Dice"; }
+	std::string GetDescription()  override { return "Choose your own dice roll value."; }
+};
+
+// RocketCard
+class RocketCard : public Item {
+public:
+	void Use(Player* p) override;
+	std::string GetName() override { return "Rocket Card"; }
+	std::string GetDescription() override { return "Send a player to hospital for two turns."; }
+};
+
+// FateCard
+class FateCard : public Item {
+public:
+	void Use(Player* p) override;
+	std::string GetName() override { return "Fate Card"; }
+	std::string GetDescription() override { return "Force trigger a fate event."; }
 };

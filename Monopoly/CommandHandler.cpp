@@ -1,6 +1,8 @@
 #include "CommandHandler.h"
 #include "Game.h"
 #include "Monopoly.h"
+#include "HorseRacing.h"
+#include "SheLongMen.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -13,6 +15,21 @@ using json = nlohmann::json;
 CommandHandler::CommandHandler() : game(nullptr) {
 }
 
+// Helper function to find a player by name
+Player* CommandHandler::FindPlayerByName(const std::string& name) {
+    if (!game) return nullptr;
+
+    // Search through all players
+    for (auto& player : game->players) {
+        if (player->GetName() == name) {
+            return player;
+        }
+    }
+
+    // Not found
+    return nullptr;
+}
+
 void CommandHandler::Initialize() {
     // Try multiple possible paths for command.json
     std::vector<std::string> possiblePaths = {
@@ -22,21 +39,21 @@ void CommandHandler::Initialize() {
         "../../../json/command.json",
         "./json/command.json"
     };
-    
+
     bool fileOpened = false;
     std::ifstream file;
-    
+
     for (const auto& path : possiblePaths) {
         file.open(path);
         if (file.is_open()) {
-            std::cout << "Successfully opened command file at: " << path << std::endl;
+            std::cout << "成功開啟指令檔: " << path << std::endl;
             fileOpened = true;
             break;
         }
     }
-    
+
     if (!fileOpened) {
-        std::cerr << "Error: Could not open command.json file at any of the tried paths!" << std::endl;
+        std::cerr << "錯誤: 找不到 command.json!" << std::endl;
         return;
     }
 
@@ -56,9 +73,9 @@ void CommandHandler::Initialize() {
         }
     }
     catch (const std::exception& e) {
-        std::cerr << "Error parsing command.json: " << e.what() << std::endl;
+        std::cerr << "解析 command.json 時發生錯誤: " << e.what() << std::endl;
     }
-    
+
     file.close();
 }
 
@@ -113,14 +130,14 @@ bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::s
         commandResult = HandleMinigameCommand(player, parts);
     }
     else {
-        std::cout << "Unknown command: " << cmdName << std::endl;
+        std::cout << "未知指令: " << cmdName << std::endl;
         return false;
     }
 
     // If command was successful and game reference is valid, save the game state
     if (commandResult && game) {
         game->SaveGame();
-        std::cout << "Game state saved." << std::endl;
+        std::cout << "已儲存遊戲進度." << std::endl;
     }
 
     return commandResult;
@@ -132,8 +149,8 @@ std::vector<std::string> CommandHandler::GetCommandList(bool detailed) {
     for (const auto& cmd : commands) {
         if (detailed) {
             std::string cmdInfo = "/" + cmd.name + " - " + cmd.description + "\n";
-            cmdInfo += "    Usage: " + cmd.usage + "\n";
-            cmdInfo += "    Example: " + cmd.example;
+            cmdInfo += "    用法: " + cmd.usage + "\n";
+            cmdInfo += "    範例: " + cmd.example;
             result.push_back(cmdInfo);
         }
         else {
@@ -177,22 +194,25 @@ std::string CommandHandler::TrimString(const std::string& str) {
     return (start < end) ? std::string(start, end) : std::string();
 }
 
-// Command handler implementations
+// ================================
+// 指令處理區塊
+// ================================
+
 bool CommandHandler::HandleMoveCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
     if (args.empty()) {
-        std::cout << "Usage: /move <position>" << std::endl;
+        std::cout << "用法: /move <位置>" << std::endl;
         return false;
     }
 
     try {
         int position;
         if (args[0] == "to" && args.size() > 1) {
-            // Find tile by name
+            // 透過地名尋找格子
             std::string tileName;
             for (size_t i = 1; i < args.size(); ++i) {
                 tileName += args[i];
@@ -201,14 +221,13 @@ bool CommandHandler::HandleMoveCommand(std::shared_ptr<Player> player, const std
                 }
             }
 
-            // Access map data without structured binding
+            // 取得地圖資料
             std::vector<Tile*> tiles = game->gameMap->getMap().first;
             std::vector<std::string> names = game->gameMap->getMap().second;
-            
-            // Find the tile by name
+
             auto it = std::find(names.begin(), names.end(), tileName);
             if (it == names.end()) {
-                std::cout << "Tile not found: " << tileName << std::endl;
+                std::cout << "找不到格子: " << tileName << std::endl;
                 return false;
             }
             position = static_cast<int>(std::distance(names.begin(), it));
@@ -216,148 +235,140 @@ bool CommandHandler::HandleMoveCommand(std::shared_ptr<Player> player, const std
         else {
             position = std::stoi(args[0]);
             if (position < 0 || position >= game->gameMap->getSize()) {
-                std::cout << "Invalid position: " << position << std::endl;
+                std::cout << "無效位置: " << position << std::endl;
                 return false;
             }
         }
 
-        // Move player to the specified position
         player->SetPosition(position);
-        std::cout << player->GetName() << " moved to position " << position << std::endl;
+        std::cout << player->GetName() << " 移動到位置 " << position << std::endl;
         return true;
     }
     catch (const std::exception& e) {
-        std::cout << "Error parsing position: " << e.what() << std::endl;
+        std::cout << "解析位置時發生錯誤: " << e.what() << std::endl;
         return false;
     }
 }
 
 bool CommandHandler::HandleGetCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
     if (args.empty()) {
-        std::cout << "Usage: /get <amount> or /get <player> <amount>" << std::endl;
+        std::cout << "用法: /get <金額> 或 /get <玩家> <金額>" << std::endl;
         return false;
     }
 
     try {
         if (args.size() == 1) {
-            // Give money to the current player
             int amount = std::stoi(args[0]);
             if (amount <= 0) {
-                std::cout << "Amount must be positive!" << std::endl;
+                std::cout << "金額必須大於 0!" << std::endl;
                 return false;
             }
-
-            // Add money to player
-            // Assuming Player has a method to add money
-            player->BuyProperty(-amount); // Negative price means adding money
-            std::cout << player->GetName() << " received $" << amount << std::endl;
+            player->BuyProperty(-amount);
+            std::cout << player->GetName() << " 從銀行獲得 $" << amount << std::endl;
             return true;
         }
         else if (args.size() == 2) {
-            // Give money to another player
             std::string targetPlayerName = args[0];
             int amount = std::stoi(args[1]);
-            
+
             if (amount <= 0) {
-                std::cout << "Amount must be positive!" << std::endl;
+                std::cout << "金額必須大於 0!" << std::endl;
                 return false;
             }
 
-            // Find the target player
             Player* targetPlayer = nullptr;
-            
-            // Special case for bank
             if (targetPlayerName == "bank") {
                 targetPlayer = &Monopoly::bank;
             }
-            // For a real implementation, search through the game's player list
-            // This would require access to the players list in Game
+            else {
+                targetPlayer = FindPlayerByName(targetPlayerName);
+            }
 
             if (!targetPlayer) {
-                std::cout << "Player not found: " << targetPlayerName << std::endl;
+                std::cout << "找不到玩家: " << targetPlayerName << std::endl;
                 return false;
             }
 
-            // Add money to target player
             targetPlayer->BuyProperty(-amount);
-            std::cout << targetPlayerName << " received $" << amount << std::endl;
+            std::cout << targetPlayerName << " 從銀行獲得 $" << amount << std::endl;
             return true;
         }
         else {
-            std::cout << "Usage: /get <amount> or /get <player> <amount>" << std::endl;
+            std::cout << "用法: /get <金額> 或 /get <玩家> <金額>" << std::endl;
             return false;
         }
     }
     catch (const std::exception& e) {
-        std::cout << "Error parsing amount: " << e.what() << std::endl;
+        std::cout << "解析金額時發生錯誤: " << e.what() << std::endl;
         return false;
     }
 }
 
 bool CommandHandler::HandleGiveCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
     if (args.size() < 2) {
-        std::cout << "Usage: /give <player> <amount>" << std::endl;
+        std::cout << "用法: /give <玩家> <金額>" << std::endl;
         return false;
     }
 
     try {
         std::string targetPlayerName = args[0];
         int amount = std::stoi(args[1]);
-        
+
         if (amount <= 0) {
-            std::cout << "Amount must be positive!" << std::endl;
+            std::cout << "金額必須大於 0!" << std::endl;
             return false;
         }
 
-        // Check if player has enough money
         if (player->GetMoney() < amount) {
-            std::cout << "Not enough money!" << std::endl;
+            std::cout << "金額不足!" << std::endl;
             return false;
         }
 
-        // Find the target player
         Player* targetPlayer = nullptr;
-        // This is placeholder code, replace with actual player lookup logic
-        // You'll need to implement a way to search for players by name
+        if (targetPlayerName == "bank") {
+            targetPlayer = &Monopoly::bank;
+        }
+        else {
+            targetPlayer = FindPlayerByName(targetPlayerName);
+        }
 
         if (!targetPlayer) {
-            std::cout << "Player not found: " << targetPlayerName << std::endl;
+            std::cout << "找不到玩家: " << targetPlayerName << std::endl;
             return false;
         }
 
-        // Transfer money
         player->Pay(targetPlayer, amount);
-        std::cout << player->GetName() << " gave $" << amount << " to " << targetPlayerName << std::endl;
+        std::cout << player->GetName() << " 給予 " << targetPlayerName << " $" << amount << std::endl;
         return true;
     }
     catch (const std::exception& e) {
-        std::cout << "Error parsing amount: " << e.what() << std::endl;
+        std::cout << "解析金額時發生錯誤: " << e.what() << std::endl;
         return false;
     }
 }
 
 bool CommandHandler::HandleCardCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
     if (args.empty()) {
-        std::cout << "Usage: /card <card_name>" << std::endl;
+        std::cout << "用法: /card <卡牌名稱>" << std::endl;
+        std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡" << std::endl;
         return false;
     }
 
-    // Combine all arguments to form the card name
     std::string cardName;
     for (size_t i = 0; i < args.size(); ++i) {
         cardName += args[i];
@@ -366,93 +377,235 @@ bool CommandHandler::HandleCardCommand(std::shared_ptr<Player> player, const std
         }
     }
 
-    // Create a specific item based on the name
-    // For now, only support ControlDiceItem
-    if (cardName == "控制骰子" || cardName == "Rocket Card") {
+    if (cardName == "Control Dice" || cardName == "控制骰子") {
         player->AddItem(new ControlDiceItem());
-        std::cout << player->GetName() << " received card: " << cardName << std::endl;
+        std::cout << player->GetName() << " 獲得卡牌: 控制骰子" << std::endl;
+        return true;
+    }
+    else if (cardName == "Rocket Card" || cardName == "火箭卡") {
+        player->AddItem(new RocketCard());
+        std::cout << player->GetName() << " 獲得卡牌: 火箭卡" << std::endl;
+        return true;
+    }
+    else if (cardName == "Fate Card" || cardName == "命運卡") {
+        player->AddItem(new FateCard());
+        std::cout << player->GetName() << " 獲得卡牌: 命運卡" << std::endl;
         return true;
     }
     else {
-        std::cout << "Unknown card: " << cardName << std::endl;
+        std::cout << "未知卡牌: " << cardName << std::endl;
+        std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡" << std::endl;
         return false;
     }
 }
 
 bool CommandHandler::HandleGameStateCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
     if (args.empty()) {
-        std::cout << "Usage: /gamestate <state>" << std::endl;
+        std::cout << "用法: /gamestate <狀態>" << std::endl;
+        std::cout << "可用狀態: end" << std::endl;
         return false;
     }
 
-    // This would require access to game state, which might not be directly accessible
-    // This is a placeholder implementation
     std::string stateStr = args[0];
-    std::cout << "Game state changed to " << stateStr << std::endl;
-    
-    return true;
+
+    if (stateStr == "end" || stateStr == "finish" || stateStr == "over") {
+        game->gameOver = true;
+        std::cout << "遊戲已標記為結束! 下回合將顯示最終結果。" << std::endl;
+        return true;
+    }
+    else {
+        std::cout << "未知狀態: " << stateStr << std::endl;
+        std::cout << "可用狀態: end" << std::endl;
+        return false;
+    }
 }
 
 bool CommandHandler::HandleInfoCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
-    // Display information about all players
-    // This would require access to all players, which might not be directly accessible
-    // This is a placeholder implementation
-    std::cout << "Player information:" << std::endl;
-    // In a real implementation, you would iterate through all players and print their info
-    
+    std::cout << "+------------+--------+-------+------------+--------------------------+\n";
+    std::cout << "| Player     | Money  | Pos   | Status     | Items                    |\n";
+    std::cout << "+------------+--------+-------+------------+--------------------------+\n";
+
+    const std::string RESET = "\033[0m";
+
+    for (int i = 0; i < game->players.size(); i++) {
+        std::string colorCode = Monopoly::GetColorCode(game->players[i]->GetColor());
+        std::cout << colorCode;
+
+        std::string status;
+        if (game->players[i]->inHospital) {
+            status = "住院 (" + std::to_string(game->players[i]->hosipitalDay) + ")";
+        }
+        else {
+            status = "正常";
+        }
+
+        std::string itemStr;
+        if (game->players[i]->GetItem().empty()) {
+            itemStr = "無";
+        }
+        else {
+            for (size_t j = 0; j < game->players[i]->GetItem().size(); j++) {
+                itemStr += game->players[i]->GetItem()[j]->GetName();
+                if (j != game->players[i]->GetItem().size() - 1)
+                    itemStr += ", ";
+            }
+        }
+
+        std::cout << RESET << "| "
+            << colorCode << "[" + std::string(1, '1' + i) + "] "
+            << RESET << std::left << std::setw(6) << game->players[i]->GetName()
+            << " | " << std::right << std::setw(6) << game->players[i]->GetMoney()
+            << " | " << std::right << std::setw(5) << game->players[i]->GetPosition()
+            << " | " << std::left << std::setw(10) << status
+            << " | " << std::left << std::setw(24) << itemStr
+            << " |\n";
+
+        std::cout << "\033[0m";
+    }
+    std::cout << "+------------+--------+-------+------------+--------------------------+\n";
+
     return true;
 }
 
 bool CommandHandler::HandleRefreshCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
-    // Force redraw the map
     game->Clear();
-    std::cout << "Map refreshed." << std::endl;
-    
+    std::cout << "地圖已重新繪製。" << std::endl;
+
     return true;
 }
 
 bool CommandHandler::HandleListCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     bool detailed = false;
-    
+
     if (!args.empty() && args[0] == "-a") {
         detailed = true;
     }
 
-    std::vector<std::string> cmdList = GetCommandList(detailed);
-    std::cout << "Available commands:" << std::endl;
-    
-    for (const auto& cmd : cmdList) {
-        std::cout << cmd << std::endl;
+    std::cout << "可用指令:" << std::endl;
+    if (detailed) {
+        std::cout << "/move - 移動玩家至指定位置（支援格子名稱或數字）" << std::endl;
+        std::cout << "    用法: /move <位置>" << std::endl;
+        std::cout << "    範例: /move 5、/move to USA" << std::endl;
+
+        std::cout << "/get - 從系統取得金錢（自己或指定玩家）" << std::endl;
+        std::cout << "    用法: /get <金額> 或 /get <玩家> <金額>" << std::endl;
+        std::cout << "    範例: /get 1000、/get Bob 500" << std::endl;
+
+        std::cout << "/give - 給指定玩家金錢（從自己扣除）" << std::endl;
+        std::cout << "    用法: /give <玩家> <金額>" << std::endl;
+        std::cout << "    範例: /give Alice 300" << std::endl;
+
+        std::cout << "/card - 取得指定名稱的卡牌" << std::endl;
+        std::cout << "    用法: /card <卡牌名稱>" << std::endl;
+        std::cout << "    範例: /card Rocket Card" << std::endl;
+
+        std::cout << "/gamestate - 強制改變當前遊戲狀態" << std::endl;
+        std::cout << "    用法: /gamestate <狀態>" << std::endl;
+        std::cout << "    範例: /gamestate MOVED" << std::endl;
+
+        std::cout << "/info - 顯示所有玩家資訊" << std::endl;
+        std::cout << "    用法: /info" << std::endl;
+        std::cout << "    範例: /info" << std::endl;
+
+        std::cout << "/refresh - 強制重新繪製地圖" << std::endl;
+        std::cout << "    用法: /refresh" << std::endl;
+        std::cout << "    範例: /refresh" << std::endl;
+
+        std::cout << "/list - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
+        std::cout << "    用法: /list [-a]" << std::endl;
+        std::cout << "    範例: /list -a" << std::endl;
+
+        std::cout << "/help - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
+        std::cout << "    用法: /help [-a]" << std::endl;
+        std::cout << "    範例: /help -a" << std::endl;
+
+        std::cout << "/minigame - 直接進入小遊戲選單" << std::endl;
+        std::cout << "    用法: /minigame" << std::endl;
+        std::cout << "    範例: /minigame" << std::endl;
+
+        std::cout << "\n可用卡牌類型:" << std::endl;
+        std::cout << "1. 控制骰子 - 可以指定自己的骰子點數" << std::endl;
+        std::cout << "2. 火箭卡 - 讓指定玩家住院兩回合" << std::endl;
+        std::cout << "3. 命運卡 - 強制觸發命運事件" << std::endl;
     }
-    
+    else {
+        std::cout << "/move - 移動玩家至指定位置（支援格子名稱或數字）" << std::endl;
+        std::cout << "/get - 從系統取得金錢（自己或指定玩家）" << std::endl;
+        std::cout << "/give - 給指定玩家金錢（從自己扣除）" << std::endl;
+        std::cout << "/card - 取得指定名稱的卡牌" << std::endl;
+        std::cout << "/gamestate - 強制改變當前遊戲狀態" << std::endl;
+        std::cout << "/info - 顯示所有玩家資訊" << std::endl;
+        std::cout << "/refresh - 強制重新繪製地圖" << std::endl;
+        std::cout << "/list - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
+        std::cout << "/help - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
+        std::cout << "/minigame - 直接進入小遊戲選單" << std::endl;
+    }
+
     return true;
 }
 
 bool CommandHandler::HandleMinigameCommand(std::shared_ptr<Player> player, const std::vector<std::string>& args) {
     if (!game) {
-        std::cout << "Game reference not set!" << std::endl;
+        std::cout << "遊戲尚未初始化!" << std::endl;
         return false;
     }
 
-    // Enter minigame menu
-    // This would require access to the minigame functionality
-    // This is a placeholder implementation
-    std::cout << "Entering minigame menu..." << std::endl;
-    
-    return true;
+    std::vector<std::string> gameOptions = {
+        "賽馬",
+        "射龍門",
+        "返回"
+    };
+
+    std::cout << "選擇要遊玩的迷你遊戲:" << std::endl;
+    for (size_t i = 0; i < gameOptions.size(); ++i) {
+        std::cout << (i + 1) << ". " << gameOptions[i] << std::endl;
+    }
+
+    int choice = -1;
+    while (choice < 0 || choice >= static_cast<int>(gameOptions.size())) {
+        std::cout << "輸入選項編號 (1-" << gameOptions.size() << "): ";
+        std::string input;
+        std::getline(std::cin, input);
+
+        try {
+            choice = std::stoi(input) - 1;
+        }
+        catch (...) {
+            choice = -1;
+        }
+    }
+
+    if (choice == 0) {
+        HorseRacing miniGame;
+        miniGame.init(player.get());
+        miniGame.gameStart();
+        return true;
+    }
+    else if (choice == 1) {
+        SheLongMen miniGame;
+        miniGame.init(player.get());
+        miniGame.gameStart();
+        return true;
+    }
+    else if (choice == 2) {
+        std::cout << "返回主選單" << std::endl;
+        return false;
+    }
+
+    return false;
 }
