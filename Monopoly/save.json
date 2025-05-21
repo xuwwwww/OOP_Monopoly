@@ -1,5 +1,5 @@
 {
-  "currentPlayerIdx": 0,
+  "currentPlayerIdx": 1,
   "playerCount": 2,
   "map": {
     "size": 28,
@@ -79,7 +79,7 @@
       {
         "index": 12,
         "name": "Australia",
-        "ownerIdx": -1,
+        "ownerIdx": 0,
         "level": 0
       },
       {
@@ -115,7 +115,7 @@
       {
         "index": 18,
         "name": "China",
-        "ownerIdx": -1,
+        "ownerIdx": 1,
         "level": 0
       },
       {
@@ -176,23 +176,27 @@
   },
   "players": [
     {
-      "name": "a",
+      "name": "A",
       "color": "red",
-      "money": 1000,
-      "position": 0,
+      "money": 800,
+      "position": 12,
       "inHospital": false,
       "hospitalDay": 0,
       "items": [
       ]
     },
     {
-      "name": "d",
+      "name": "B",
       "color": "yellow",
-      "money": 1000,
-      "position": 0,
+      "money": 1100,
+      "position": 18,
       "inHospital": false,
       "hospitalDay": 0,
       "items": [
+        {
+          "name": "Rocket Card",
+          "type": "item"
+        }
       ]
     }
   ]

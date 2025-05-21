@@ -63,6 +63,8 @@ void Map::LoadMap(std::string path)
 		std::string line;
 		bool inTilesArray = false;
 
+		int num = 0;
+
 		while (std::getline(ss, line)) {
 			// 跳過空白行和註解
 			if (line.empty() || line.find("//") == 0) continue;
@@ -150,25 +152,25 @@ void Map::LoadMap(std::string path)
 				// 根據解析出的資料建立合適的 Tile 物件
 				Tile* newTile = nullptr;
 				if (typeStr == "START") {
-					newTile = new StartTile();
+					newTile = new StartTile(num);
 				}
 				else if (typeStr == "PROPERTY") {
-					newTile = new PropertyTile(level, price, nameStr);
+					newTile = new PropertyTile(level, price, nameStr, num);
 				}
 				else if (typeStr == "SHOP") {
-					newTile = new ShopTile();
+					newTile = new ShopTile(num);
 				}
 				else if (typeStr == "HOSPITAL") {
-					newTile = new HospitalTile();
+					newTile = new HospitalTile(num);
 				}
 				else if (typeStr == "CHANCE") {
-					newTile = new ChanceTile();
+					newTile = new ChanceTile(num);
 				}
 				else if (typeStr == "FATE") {
-					newTile = new FateTile();
+					newTile = new FateTile(num);
 				}
 				else if (typeStr == "GAME") {
-					newTile = new MiniGameTile();
+					newTile = new MiniGameTile(num);
 				}
 				else {
 					std::cerr << "警告：未知的格子類型 '" << typeStr << "'，已跳過。\n";
@@ -179,6 +181,8 @@ void Map::LoadMap(std::string path)
 				if (newTile) {
 					addTile(newTile, nameStr);
 				}
+
+				num++;
 			}
 		}
 	}
@@ -403,35 +407,35 @@ void Map::InitMap()
 	names.clear();
 
 	// 依照圖片順序建立 28 個格子
-	addTile(new StartTile(), "START");               // 0
-	addTile(new PropertyTile(0, 200, "USA"), "USA"); // 1
-	addTile(new FateTile(), "Fate");                // 2
-	addTile(new PropertyTile(0, 200, "France"), "France"); // 3
-	addTile(new ShopTile(), "Item Shop");           // 4
-	addTile(new PropertyTile(0, 200, "Japan"), "Japan"); // 5
-	addTile(new PropertyTile(0, 200, "Mexico"), "Mexico"); // 6
-	addTile(new PropertyTile(0, 200, "Sweden"), "Sweden"); // 7
+	addTile(new StartTile(0), "START");               // 0
+	addTile(new PropertyTile(0, 200, "USA", 1), "USA"); // 1
+	addTile(new FateTile(2), "Fate");                // 2
+	addTile(new PropertyTile(0, 200, "France", 3), "France"); // 3
+	addTile(new ShopTile(4), "Item Shop");           // 4
+	addTile(new PropertyTile(0, 200, "Japan", 5), "Japan"); // 5
+	addTile(new PropertyTile(0, 200, "Mexico", 6), "Mexico"); // 6
+	addTile(new PropertyTile(0, 200, "Sweden", 7), "Sweden"); // 7
 
-	addTile(new PropertyTile(0, 200, "Germany"), "Germany"); // 8
-	addTile(new PropertyTile(0, 200, "UK"), "UK");       // 9
-	addTile(new ChanceTile(), "Chance");             // 10
-	addTile(new PropertyTile(0, 200, "Canada"), "Canada"); // 11
-	addTile(new PropertyTile(0, 200, "Australia"), "Australia"); // 12
-	addTile(new PropertyTile(0, 200, "Egypt"), "Egypt");   // 13
+	addTile(new PropertyTile(0, 200, "Germany", 8), "Germany"); // 8
+	addTile(new PropertyTile(0, 200, "UK", 9), "UK");       // 9
+	addTile(new ChanceTile(10), "Chance");             // 10
+	addTile(new PropertyTile(0, 200, "Canada", 11), "Canada"); // 11
+	addTile(new PropertyTile(0, 200, "Australia", 12), "Australia"); // 12
+	addTile(new PropertyTile(0, 200, "Egypt", 13), "Egypt");   // 13
 
-	addTile(new PropertyTile(0, 200, "Italy"), "Italy");   // 14
-	addTile(new HospitalTile(), "Hospital");         // 15
-	addTile(new FateTile(), "Fate");                // 16
-	addTile(new PropertyTile(0, 200, "Spain"), "Spain");   // 17
-	addTile(new PropertyTile(0, 200, "China"), "China");   // 18
-	addTile(new PropertyTile(0, 200, "Turkey"), "Turkey"); // 19
-	addTile(new PropertyTile(0, 200, "Korea"), "Korea");   // 20
+	addTile(new PropertyTile(0, 200, "Italy", 14), "Italy");   // 14
+	addTile(new HospitalTile(15), "Hospital");         // 15
+	addTile(new FateTile(16), "Fate");                // 16
+	addTile(new PropertyTile(0, 200, "Spain", 17), "Spain");   // 17
+	addTile(new PropertyTile(0, 200, "China", 18), "China");   // 18
+	addTile(new PropertyTile(0, 200, "Turkey", 19), "Turkey"); // 19
+	addTile(new PropertyTile(0, 200, "Korea", 20), "Korea");   // 20
 
-	addTile(new PropertyTile(0, 200, "Brazil"), "Brazil"); // 21
-	addTile(new PropertyTile(0, 200, "Uganda"), "Uganda"); // 22
-	addTile(new PropertyTile(0, 200, "Russia"), "Russia"); // 23
-	addTile(new ChanceTile(), "Chance");             // 24
-	addTile(new PropertyTile(0, 200, "India"), "India");   // 25
-	addTile(new PropertyTile(0, 200, "England"), "England"); // 26
-	addTile(new PropertyTile(0, 200, "Africa"), "Africa"); // 27
+	addTile(new PropertyTile(0, 200, "Brazil", 21), "Brazil"); // 21
+	addTile(new PropertyTile(0, 200, "Uganda", 22), "Uganda"); // 22
+	addTile(new PropertyTile(0, 200, "Russia", 23), "Russia"); // 23
+	addTile(new ChanceTile(24), "Chance");             // 24
+	addTile(new PropertyTile(0, 200, "India", 25), "India");   // 25
+	addTile(new PropertyTile(0, 200, "England", 26), "England"); // 26
+	addTile(new PropertyTile(0, 200, "Africa", 27), "Africa"); // 27
 }

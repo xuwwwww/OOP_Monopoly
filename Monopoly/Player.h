@@ -54,19 +54,39 @@ public:
 	void UseItem(Item* item);
 
 	/**
-	 * 撿到道具啦
+	 *  將 item 加入 vector
 	 */
 	void AddItem(Item* item);
 
 	/**
-	 * 移動位置：就是 position+steps 再 mod 一下地圖大小
+	 * 移動位置：就是 position + steps 再 mod 一下地圖大小
 	 */
 	void Move(int steps, int mapSize);
+
+	/**
+	 * 買道具：有錢就扣一扣回傳 true，沒錢就乖乖回傳 false
+	 */
+	bool BuyItem(int price);
+
+	/**
+	 *  將 property(tile) 加入 vector
+	 */
+	void AddProperty(Tile* p);
 
 	/**
 	 * 買地：有錢就扣一扣回傳 true，沒錢就乖乖回傳 false
 	 */
 	bool BuyProperty(int price);
+
+	/**
+	 * 賣地
+	 */
+	void SellProperty(Tile* p);
+
+	/**
+	 * 回傳 property vector
+	 */
+	std::vector<Tile*> GetProperty();
 
 	/**
 	 * 付錢：把錢轉給別人
@@ -93,4 +113,7 @@ private:
 
 	/** 持有道具清單 */
 	std::vector<Item*> item;
+
+	/** 擁有的土地 */
+	std::vector<Tile*>property;
 };

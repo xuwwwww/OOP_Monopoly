@@ -24,9 +24,15 @@ class Tile
 {
 public:
 	std::string color = "";	// 儲存顏色資訊
+	int number = 0;
 
 	/**
-	 * 拿這格的顏色 
+	 * return name
+	 */
+	virtual std::string GetName();
+
+	/**
+	 * 拿這格的顏色
 	 */
 	std::string getColor();
 
@@ -44,7 +50,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	StartTile();
+	StartTile(int);
 
 	/**
 	 * 玩家抵達起點格時觸發效果
@@ -69,7 +75,12 @@ public:
 	 * @param price 地價
 	 * @param name 地名
 	 */
-	PropertyTile(int level, int price, std::string name);
+	PropertyTile(int level, int price, std::string name, int n);
+
+	/**
+	 * 取得名稱
+	 */
+	std::string GetName() override;
 
 	/**
 	 * 取得地價
@@ -111,7 +122,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	ShopTile();
+	ShopTile(int n);
 
 	/**
 	 * 玩家抵達商店格時觸發效果
@@ -127,7 +138,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	HospitalTile();
+	HospitalTile(int n);
 
 	/**
 	 * 玩家抵達醫院格時觸發效果
@@ -143,7 +154,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	ChanceTile();
+	ChanceTile(int n);
 
 	/**
 	 * 玩家抵達機會格時觸發效果
@@ -159,7 +170,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	FateTile();
+	FateTile(int n);
 
 	/**
 	 * 玩家抵達命運格時觸發效果
@@ -175,7 +186,7 @@ public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
-	MiniGameTile();
+	MiniGameTile(int n);
 
 	/**
 	 * 玩家抵達小遊戲格時觸發效果

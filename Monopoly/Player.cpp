@@ -94,16 +94,48 @@ void Player::Move(int steps, int mapSize)
 	position = (position + steps) % mapSize;
 }
 
-bool Player::BuyProperty(int price)
+bool Player::BuyItem(int price)
 {
 	if (money < price) {
-		std::cout << "財產不足，不得購買\n";
+		// std::cout << "財產不足，不得購買\n";
 		return false;
 	}
 	else {
 		money -= price;
 		return true;
 	}
+}
+
+void Player::AddProperty(Tile* p)
+{
+	property.push_back(p);
+}
+
+
+bool Player::BuyProperty(int price)
+{
+	if (money < price) {
+		// std::cout << "財產不足，不得購買\n";
+		return false;
+	}
+	else {
+		money -= price;
+		return true;
+	}
+}
+
+void Player::SellProperty(Tile* p)
+{
+	auto it = std::find(property.begin(), property.end(), p);
+	if (it != property.end()) {
+		property.erase(it);
+	}
+	money += 150;
+}
+
+std::vector<Tile*> Player::GetProperty()
+{
+	return property;
 }
 
 void Player::Pay(Player* other, int amount)

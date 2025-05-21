@@ -189,10 +189,10 @@ void Game::NextTurn()
 				"支付$50出院費",
 				"乖乖在醫院休養"
 			};
-			
+
 			std::string hospitalPrompt = "你正在醫院休養，選擇行動：";
 			int hospitalChoice = Monopoly::GetUserChoice(hospitalPrompt, hospitalOptions, true, false);
-			
+
 			if (hospitalChoice == 0) {
 				// 擲骰嘗試出院
 				int roll = RollDiceWithAsciiAnimation();
@@ -201,7 +201,8 @@ void Game::NextTurn()
 					std::cout << "擲出了 " << roll << " 點，成功出院！" << std::endl;
 					currentPlayer->inHospital = false;
 					currentPlayer->hosipitalDay = 0;
-				} else {
+				}
+				else {
 					// 失敗，繼續住院
 					std::cout << "擲出了 " << roll << " 點，未達到4點，需繼續住院。" << std::endl;
 					currentPlayer->hosipitalDay++;
@@ -215,7 +216,8 @@ void Game::NextTurn()
 					std::cout << currentPlayer->GetName() << " 支付了$50出院費，提前出院！" << std::endl;
 					currentPlayer->inHospital = false;
 					currentPlayer->hosipitalDay = 0;
-				} else {
+				}
+				else {
 					std::cout << "你沒有足夠的錢支付出院費！" << std::endl;
 					// 增加住院天數並跳過回合
 					currentPlayer->hosipitalDay++;
@@ -240,7 +242,7 @@ void Game::NextTurn()
 			//"作弊"
 		};
 		// 使用true參數表示顯示地圖，但不允許輸入指令
-		int choice = Monopoly::GetUserChoice(question, options, true, true);
+		int choice = Monopoly::GetUserChoice(question, options, true, false);
 
 		if (choice == 0) {
 			// 直接進行擲骰，不顯示額外提示
@@ -375,34 +377,34 @@ void Game::EndGame()
 	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
 	std::cout << "| 排名  | 玩家名稱   | 最終資金  | 狀態          |" << std::endl;
 	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
-	
+
 	// 建立玩家索引列表並根據金錢排序
 	std::vector<std::pair<int, Player*>> playerRanking;
 	for (size_t i = 0; i < players.size(); i++) {
 		playerRanking.push_back(std::make_pair(i, players[i]));
 	}
-	
+
 	// 根據金錢由高到低排序
-	std::sort(playerRanking.begin(), playerRanking.end(), 
-			  [](const std::pair<int, Player*>& a, const std::pair<int, Player*>& b) {
-				  return a.second->GetMoney() > b.second->GetMoney();
-			  });
-	
+	std::sort(playerRanking.begin(), playerRanking.end(),
+		[](const std::pair<int, Player*>& a, const std::pair<int, Player*>& b) {
+			return a.second->GetMoney() > b.second->GetMoney();
+		});
+
 	// 輸出玩家排名與資訊
 	for (size_t i = 0; i < playerRanking.size(); i++) {
 		Player* p = playerRanking[i].second;
 		std::string colorCode = Monopoly::GetColorCode(p->GetColor());
 		std::string status = (p->GetMoney() < 0) ? "破產" : (i == 0) ? "勝利" : "遊戲結束";
-		
-		std::cout << "| " << std::left << std::setw(5) << (i + 1) 
-				  << " | " << colorCode << std::left << std::setw(10) << p->GetName() << "\033[0m"
-				  << " | " << std::right << std::setw(9) << p->GetMoney() 
-				  << " | " << std::left << std::setw(13) << status << " |" << std::endl;
+
+		std::cout << "| " << std::left << std::setw(5) << (i + 1)
+			<< " | " << colorCode << std::left << std::setw(10) << p->GetName() << "\033[0m"
+			<< " | " << std::right << std::setw(9) << p->GetMoney()
+			<< " | " << std::left << std::setw(13) << status << " |" << std::endl;
 	}
-	
+
 	std::cout << "+-------+------------+-----------+---------------+" << std::endl;
 	std::cout << "\n恭喜 " << playerRanking[0].second->GetName() << " 獲得遊戲勝利！" << std::endl;
-	
+
 	// 遊戲結束時刪除存檔
 	DeleteSaveGame();
 }
@@ -424,9 +426,9 @@ void Game::PrintMapStatus()
 
 void Game::PrintPlayerStatus()
 {
-	std::cout << "+------------+--------+-------+------------+--------------------------+\n";
-	std::cout << "| 玩家名稱   | 資金   | 位置  | 狀態       | 擁有道具                 |\n";
-	std::cout << "+------------+--------+-------+------------+--------------------------+\n";
+	std::cout << "+------------+--------+-------+------------+--------------------------+--------------------------+\n";
+	std::cout << "| 玩家名稱   | 資金   | 位置  | 狀態       | 擁有道具                 | 擁有地產                 |\n";
+	std::cout << "+------------+--------+-------+------------+--------------------------+--------------------------+\n";
 
 	const std::string RESET = "\033[0m";
 
@@ -445,19 +447,27 @@ void Game::PrintPlayerStatus()
 		}
 
 		// 道具字串
-		std::string itemStr;
-		if (players[i]->GetItem().empty()) {
-			itemStr = "無";
-		}
-		else {
-			for (size_t j = 0; j < players[i]->GetItem().size(); j++) {
-				itemStr += players[i]->GetItem()[j]->GetName();
-				if (j != players[i]->GetItem().size() - 1)
-					itemStr += ", ";
-			}
+		std::string itemStr = players[i]->GetItem().empty() ? "無" : "";
+		for (size_t j = 0; j < players[i]->GetItem().size(); j++) {
+			itemStr += players[i]->GetItem()[j]->GetName();
+			if (j != players[i]->GetItem().size() - 1)
+				itemStr += ", ";
 		}
 
-		// 輸出每欄，setw 控制寬度
+		// 地產
+		std::string propertyStr = players[i]->GetProperty().empty() ? "無" : "";
+		vector<int>tmp;
+		for (size_t j = 0; j < players[i]->GetProperty().size(); j++) {
+			tmp.push_back(players[i]->GetProperty()[j]->number);
+		}
+		sort(tmp.begin(), tmp.end());
+		for (size_t j = 0; j < tmp.size(); j++) {
+			propertyStr += to_string(tmp[j]);
+			if (j != tmp.size() - 1)
+				propertyStr += ", ";
+		}
+
+		// 輸出每欄
 		std::cout << RESET << "| "
 			<< colorCode << "[" + std::string(1, '1' + i) + "] "
 			<< RESET << std::left << std::setw(6) << players[i]->GetName()
@@ -465,12 +475,13 @@ void Game::PrintPlayerStatus()
 			<< " | " << std::right << std::setw(5) << players[i]->GetPosition()
 			<< " | " << std::left << std::setw(10) << status
 			<< " | " << std::left << std::setw(24) << itemStr
+			<< " | " << std::left << std::setw(24) << propertyStr
 			<< " |\n";
 
 		std::cout << "\033[0m";
 	}
-	std::cout << "+------------+--------+-------+------------+--------------------------+\n";
 
+	std::cout << "+------------+--------+-------+------------+--------------------------+--------------------------+\n";
 }
 
 void Game::PrintDice(int d1, int d2) {
@@ -601,6 +612,7 @@ bool Game::SaveGame(const std::string& filename)
 			else {
 				saveFile << "    }\n";
 			}
+
 		}
 		saveFile << "  ]\n";
 
@@ -773,6 +785,7 @@ bool Game::LoadGame(const std::string& filename)
 			int money = 0, position = 0;
 			bool inHospital = false;
 			int hospitalDay = 0;
+			std::vector<Item*>items;
 
 			// 名稱
 			size_t namePos = playerJson.find("\"name\":");
@@ -853,6 +866,36 @@ bool Game::LoadGame(const std::string& filename)
 				hospitalDay = std::stoi(valueStr);
 			}
 
+			// 道具
+			size_t itemsPos = playerJson.find("\"items\":");
+			if (itemsPos != std::string::npos) {
+				size_t listStart = playerJson.find("[", itemsPos);
+				size_t listEnd = playerJson.find("]", listStart);
+				std::string itemList = playerJson.substr(listStart, listEnd - listStart + 1);
+
+				size_t itemNamePos = 0;
+				while ((itemNamePos = itemList.find("\"name\":", itemNamePos)) != std::string::npos) {
+					size_t valueStart = itemList.find("\"", itemNamePos + 7) + 1;
+					size_t valueEnd = itemList.find("\"", valueStart);
+					std::string itemName = itemList.substr(valueStart, valueEnd - valueStart);
+
+					Item* newItem = NULL;
+					if (itemName == "Control Dice") newItem = new ControlDiceItem();
+					if (itemName == "Rocket Card") newItem = new RocketCard();
+					if (itemName == "FateCard") newItem = new FateCard();
+
+					if (newItem) {
+						items.push_back(newItem);
+					}
+					else {
+						std::cerr << "無法辨識道具名稱: " << itemName << "\n";
+					}
+
+					itemNamePos = valueEnd;
+				}
+			}
+
+
 			std::cout << "玩家資料: 名稱=" << name << ", 顏色=" << color << ", 金錢=" << money
 				<< ", 位置=" << position << ", 住院=" << (inHospital ? "是" : "否") << "\n";
 
@@ -861,8 +904,9 @@ bool Game::LoadGame(const std::string& filename)
 			player->SetPosition(position);
 			player->inHospital = inHospital;
 			player->hosipitalDay = hospitalDay;
-
-			// 道具解析暫時略過
+			for (int i = 0; i < items.size(); i++) {
+				player->AddItem(items[i]);
+			}
 
 			players.push_back(player);
 			playerCount++;
@@ -962,6 +1006,8 @@ bool Game::LoadGame(const std::string& filename)
 						for (int i = 0; i < level; ++i) {
 							propTile->Upgrade();
 						}
+
+						players[ownerIdx]->AddProperty(propTile);
 					}
 				}
 
@@ -1049,7 +1095,7 @@ void Game::HandlePlayerBankruptcy(Player* bankruptPlayer, Player* creditor)
 
 Player* Game::getCurrentPlayer() {
 	if (currentPlayerIdx >= 0 && currentPlayerIdx < static_cast<int>(players.size())) {
-	return players[currentPlayerIdx];
+		return players[currentPlayerIdx];
 	}
 	return nullptr;
 }
@@ -1084,7 +1130,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		// Parse player name and amount
 		std::string playerName;
 		int amount;
-		
+
 		// Check if there's a player name
 		if (iss >> playerName) {
 			// If the first argument is a number, it's just an amount
@@ -1099,7 +1145,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 				if (iss >> amount) {
 					// Find the target player
 					Player* targetPlayer = nullptr;
-					
+
 					// Special case for bank
 					if (playerName == "bank") {
 						targetPlayer = &Monopoly::bank;
@@ -1113,7 +1159,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 							}
 						}
 					}
-					
+
 					if (!targetPlayer) {
 						std::cout << "找不到玩家：" << playerName << std::endl;
 					}
@@ -1130,7 +1176,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		else {
 			std::cout << "格式錯誤！請使用 /get <金額> 或 /get <玩家> <金額>\n";
 		}
-		
+
 		Monopoly::WaitForEnter();
 		return false;
 	}
@@ -1149,7 +1195,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 		switch (choice) {
 		case 0:
 			if (p == players[0]) {
-				std::cout << "不能選擇自己唷！\n";
+				std::cout << "不能選擇自己！\n";
 				Monopoly::WaitForEnter();
 				return false;
 			}
@@ -1157,7 +1203,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 			break;
 		case 1:
 			if (p == players[1]) {
-				std::cout << "不能選擇自己唷！\n";
+				std::cout << "不能選擇自己！\n";
 				Monopoly::WaitForEnter();
 				return false;
 			}
@@ -1165,7 +1211,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 			break;
 		case 2:
 			if (p == players[2]) {
-				std::cout << "不能選擇自己唷！\n";
+				std::cout << "不能選擇自己！\n";
 				Monopoly::WaitForEnter();
 				return false;
 			}
@@ -1173,7 +1219,7 @@ bool Game::HandleHiddenCommand(const std::string& input) {
 			break;
 		case 3:
 			if (p == players[3]) {
-				std::cout << "不能選擇自己唷！\n";
+				std::cout << "不能選擇自己！\n";
 				Monopoly::WaitForEnter();
 				return false;
 			}

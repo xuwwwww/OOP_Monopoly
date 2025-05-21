@@ -68,9 +68,10 @@ string getHouse(int level) {
 }
 
 
-StartTile::StartTile()
+StartTile::StartTile(int n)
 {
 	color = "cyan";
+	number = n;
 }
 
 void StartTile::OnLand(Player* p)
@@ -79,13 +80,19 @@ void StartTile::OnLand(Player* p)
 	std::cout << "回到起點格: 獎勵200元\n";
 }
 
-PropertyTile::PropertyTile(int _id, int _price, std::string _name)
+PropertyTile::PropertyTile(int _id, int _price, std::string _name, int n)
 {
 	color = "";
 	level = _id;
 	owner = NULL;
 	name = _name;
 	price = _price;
+	number = n;
+}
+
+std::string PropertyTile::GetName()
+{
+	return name;
 }
 
 int PropertyTile::GetPrice()
@@ -129,6 +136,7 @@ void PropertyTile::OnLand(Player* p)
 		if (choice == 0) {
 			if (p->BuyProperty(price)) {
 				std::cout << "\n購買成功！\n";
+				p->AddProperty(this);
 				SetOwner(p);
 			}
 			else {
@@ -158,6 +166,22 @@ void PropertyTile::OnLand(Player* p)
 				std::cout << "金錢不足，無法升級。\n";
 			}
 		}
+		else {
+			// 詢問是否販售土地
+			std::vector<std::string> sellOptions = {
+				"是，要出售這塊地（獲得 150 元）",
+				"否，保留土地"
+			};
+			std::string sellQuestion = "是否要出售這塊土地？你可以獲得 150 元。";
+			int sellChoice = Monopoly::GetUserChoice(sellQuestion, sellOptions);
+
+			if (sellChoice == 0) {
+				p->SellProperty(this);
+				owner = nullptr;
+				level = 0;
+				std::cout << "\n土地已出售，獲得 150 元！\n";
+			}
+		}
 	}
 	else if (owner != p) {
 		int rent = price;
@@ -173,9 +197,10 @@ void PropertyTile::OnLand(Player* p)
 }
 
 
-ShopTile::ShopTile()
+ShopTile::ShopTile(int n)
 {
 	color = "teal";
+	number = n;
 }
 
 void ShopTile::OnLand(Player* p)
@@ -225,7 +250,7 @@ void ShopTile::OnLand(Player* p)
 			if (purchased[choice]) {
 				std::cout << "此商品已經購買過，無法再次購買。\n";
 			}
-			else if (p->BuyProperty(itemPrices[choice])) {
+			else if (p->BuyItem(itemPrices[choice])) {
 				p->AddItem(new ControlDiceItem());
 				purchased[choice] = true;
 				std::cout << "購買成功！\n";
@@ -238,8 +263,9 @@ void ShopTile::OnLand(Player* p)
 	} while (true);
 }
 
-HospitalTile::HospitalTile()
+HospitalTile::HospitalTile(int n)
 {
+	number = n;
 	color = "gray";
 }
 
@@ -257,8 +283,9 @@ void HospitalTile::OnLand(Player* p)
 	}
 }
 
-ChanceTile::ChanceTile()
+ChanceTile::ChanceTile(int n)
 {
+	number = n;
 	color = "orange";
 }
 
@@ -348,8 +375,9 @@ void ChanceTile::OnLand(Player* p)
 	}
 }
 
-FateTile::FateTile()
+FateTile::FateTile(int n)
 {
+	number = n;
 	color = "purple";
 }
 
@@ -405,8 +433,9 @@ void FateTile::OnLand(Player* p)
 	}
 }
 
-MiniGameTile::MiniGameTile()
+MiniGameTile::MiniGameTile(int n)
 {
+	number = n;
 	color = "brown";
 }
 
@@ -433,6 +462,11 @@ void MiniGameTile::OnLand(Player* p)
 std::string Tile::getColor()
 {
 	return color;
+}
+
+std::string Tile::GetName()
+{
+	return std::string();
 }
 
 void Tile::OnLand(Player* p)
