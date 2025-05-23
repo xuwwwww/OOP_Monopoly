@@ -92,11 +92,11 @@ void SheLongMen::gameStart() {
         }
         else if ((nextCard > low && nextCard < high && choice == 0) ||
             ((nextCard < low || nextCard > high) && choice == 1)) {
-            std::cout << "你贏了！" << std::endl;
+            std::cout << "你贏了！ 獲得" << betMoney << "元！" << std::endl;
             Monopoly::bank.Pay(player, betMoney);
         }
         else {
-            std::cout << "你輸了！" << std::endl;
+            std::cout << "你輸了！ 損失" << betMoney << "元！" << std::endl;
             player->Pay(&Monopoly::bank, betMoney);
         }
 
@@ -115,11 +115,11 @@ void SheLongMen::gameStart() {
         }
         else if ((nextCard > card1 && choice == 1) ||
             (nextCard < card1 && choice == 0)) {
-            std::cout << "你贏了！" << std::endl;
+            std::cout << "你贏了！ 獲得" << betMoney << "元！" << std::endl;
             Monopoly::bank.Pay(player, betMoney);
         }
         else {
-            std::cout << "你輸了！" << std::endl;
+            std::cout << "你輸了！ 損失" << betMoney << "元！" << std::endl;
             player->Pay(&Monopoly::bank, betMoney);
         }
     }

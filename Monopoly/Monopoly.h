@@ -5,6 +5,7 @@
 class Game;
 class Player;
 
+
 namespace Monopoly {
 	extern Game* game;
 	extern Player bank;
@@ -37,9 +38,26 @@ namespace Monopoly {
 	void SetTextColor(const Color& color);
 	void SetBackgroundColor(const BackgroundColor& color);
 	void UpdateScreen();
+	// withMap參數，true 顯示地圖和玩家， false 不顯示，想要有地圖用Monopoly::GetUserChoice(question, options, true);
+	/**
+	 * 顯示選項清單，根據上下按鍵切換選項。
+	 * 
+	 * \param question
+	 * \param options
+	 * \param withMap 是否顯示地圖
+	 * \param cmd 是否能輸入指令
+	 * \return 
+	 */
 	int GetUserChoice(const std::string& question, const std::vector<std::string>& options, bool withMap = false, bool cmd = false);
 	void WaitForEnter();
 	void clearScreen();
+	/**
+	 * 等待ms毫秒.
+	 */
 	void sleepMS(const int& ms);
+	/**
+	 * 等待s秒.
+	 */
 	void sleepS(const int& s);
+	std::string tappingCommand();
 }

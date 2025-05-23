@@ -1,5 +1,6 @@
 #include "Monopoly.h"
 #include "Game.h"
+#include "CommandHandler.h"
 #include <chrono>
 #include <conio.h>
 #include <ctime>
@@ -48,17 +49,17 @@ void Monopoly::UpdateScreen() {
 	game->PrintPlayerStatus();
 }
 
+// withMap參數，true 顯示地圖和玩家， false 不顯示，想要有地圖用Monopoly::GetUserChoice(question, options, true);
 int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::string>& options, bool withMap, bool cmd) {
 	int selected = 0;
+	int key;
 
 	while (_kbhit()) _getch();
 
-	while (true) {
+	do {
 		if (withMap) game->Clear();
-		else {
+		else { // 根據withMap參數，true 顯示地圖和玩家， false 不顯示
 			system("cls");
-			game->PrintMapStatus();
-			game->PrintPlayerStatus();
 		}
 
 		std::cout << question << "\n\n";
@@ -75,34 +76,15 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 			std::cout << "\n請使用上下鍵選擇，按 Enter 確認" << std::endl;
 		}
 
-		int key = _getch();
+		key = _getch();
 		if (key == 224) {
 			key = _getch();
 			if (key == 72) selected = (selected - 1 + static_cast<int>(options.size())) % static_cast<int>(options.size());
 			if (key == 80) selected = (selected + 1) % static_cast<int>(options.size());
 		}
-		else if (key == '/') {
+		else if (cmd && key == '/') {
 			// Command input mode
-			std::string input = "/";
-			std::cout << "\n指令：" << input;
-			
-			// Keep reading input until Enter is pressed
-			while (true) {
-				int ch = _getch();
-				if (ch == '\r') { // Enter key
-					break;
-				}
-				else if (ch == '\b') { // Backspace
-					if (input.length() > 1) { // Don't delete the '/'
-						input.pop_back();
-						std::cout << "\b \b"; // Erase character on screen
-					}
-				}
-				else if (ch >= 32 && ch <= 126) { // Printable characters
-					input += (char)ch;
-					std::cout << (char)ch;
-				}
-			}
+			std::string input = Monopoly::tappingCommand();
 			
 			std::cout << std::endl;
 			
@@ -127,46 +109,48 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 			// Continue with the menu
 			continue;
 		}
-		else if (key == '\r') {
-			if (cmd) {
-				// 判斷是否是擲骰子選項，如果是則直接返回
-				if (options.size() > 0 && selected == 0 && options[0] == "進行擲骰") {
-					return selected;
-				}
-				
-				// 改為詢問是否輸入指令
-				std::string input;
-				std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
-				std::getline(std::cin, input);
 
-				if (!input.empty() && input[0] == '/') {
-					// Convert current player to shared_ptr for command processing
-					Player* currentPlayer = game->getCurrentPlayer();
-					if (currentPlayer) {
-						std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter
-						
-						// Try to process the command with our new system first
-						if (game->processCommand(playerPtr, input)) {
-							// Wait for user acknowledgment
-							std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
-							_getch();
-							continue;
-						}
-					}
-					
-					// Fall back to old command handler if our new system doesn't handle it
-					if (game->HandleHiddenCommand(input))
-						return -1;
-					continue;
-				}
-				else {
-					// 空字串代表按下 Enter，不輸入指令
-					return selected;
-				}
-			}
-			else return selected;
-		}
-	}
+	} while (key != '\r');
+
+		//	else if (key == '\r') {
+		//	if (cmd) {
+		//		// 判斷是否是擲骰子選項，如果是則直接返回
+		//		if (options.size() > 0 && selected == 0 && options[0] == "進行擲骰") {
+		//			return selected;
+		//		}
+
+		//		// 改為詢問是否輸入指令
+		//		std::string input;
+		//		std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
+		//		std::getline(std::cin, input);
+
+		//		if (!input.empty() && input[0] == '/') {
+		//			// Convert current player to shared_ptr for command processing
+		//			Player* currentPlayer = game->getCurrentPlayer();
+		//			if (currentPlayer) {
+		//				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter
+
+		//				// Try to process the command with our new system first
+		//				if (game->processCommand(playerPtr, input)) {
+		//					// Wait for user acknowledgment
+		//					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
+		//					_getch();
+		//					continue;
+		//				}
+		//			}
+
+		//			throw;
+		//		}
+		//		else {
+		//			// 空字串代表按下 Enter，不輸入指令
+		//			return selected;
+		//		}
+		//	}
+		//	else return selected;
+		//}
+
+
+	return selected;
 }
 
 void Monopoly::WaitForEnter() {
@@ -184,4 +168,26 @@ void Monopoly::sleepMS(const int& ms) {
 
 void Monopoly::sleepS(const int& s) {
 	std::this_thread::sleep_for(std::chrono::seconds(s));
+}
+
+std::string Monopoly::tappingCommand() {
+	std::string input = "/";
+	std::cout << "\n指令：" << input;
+
+	// Keep reading input until Enter is pressed
+	int ch;
+	while (ch = _getch(), ch != '\r') {
+		if (ch == '\b') { // Backspace
+			if (input.length() > 1) { // Don't delete the '/'
+				input.pop_back();
+				std::cout << "\b \b"; // Erase character on screen
+			}
+		}
+		else if (ch >= 32 && ch <= 126) { // Printable characters
+			input += (char)ch;
+			std::cout << (char)ch;
+		}
+	}
+
+	return input;
 }
