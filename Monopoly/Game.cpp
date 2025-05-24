@@ -4,10 +4,12 @@
 #include "HorseRacing.h"
 #include "SheLongMen.h"
 #include "CommandHandler.h"
+#include "Item.h"
+
+#include "../nlohmann/json.hpp"
 
 #include <cstdlib>
 #include <ctime>
-#include <vector>
 #include <thread>
 #include <chrono>
 #include <conio.h>
@@ -81,6 +83,29 @@ Game::Game()
 
 void Game::InitGame()
 {
+	std::vector<std::string> possiblePaths = {
+		"../json/configs.json",
+		"json/configs.json",
+		"../../json/configs.json",
+		"../../../json/configs.json",
+		"./json/configs.json"
+	};
+
+	std::ifstream file;
+
+	for (const auto& path : possiblePaths) {
+		file.open(path);
+		if (file) break;
+	}
+
+	if (!file) {
+		std::cerr << "錯誤: 找不到 configs.json!" << std::endl;
+		return;
+	}
+	nlohmann::json data;
+	file >> data;
+	file.close();
+
 	gameMap = new Map();
 
 	int playerNum = 0;
@@ -120,10 +145,39 @@ void Game::InitGame()
 			if (!duplicate) break;
 		}
 
-		Player* p = new Player(name, colors[i], 1000);
+		Player* p;
+		if (data["init"]["money"].is_number())
+			p = new Player(name, colors[i], data["init"]["money"]);
+		else
+			p = new Player(name, colors[i], 1000);
+		
 		players.push_back(p);
 	}
-
+	
+	std::string itemName("");
+	for (auto& a : data["init"]["items"].items()) {
+		itemName = a.key();
+		if (itemName != "") {
+			if (itemName == u8"遙控骰子") {
+				for (auto& p : players) {
+					for (int i = 0; i < a.value(); ++i)
+						p->AddItem(new ControlDiceItem());
+				}
+			}
+			else if (itemName == u8"命運卡") {
+				for (auto& p : players) {
+					for (int i = 0; i < a.value(); ++i)
+						p->AddItem(new FateCard());
+				}
+			}
+			else if (itemName == u8"火箭卡") {
+				for (auto& p : players) {
+					for (int i = 0; i < a.value(); ++i)
+						p->AddItem(new RocketCard());
+				}
+			}
+		}
+	}
 
 	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
 
@@ -239,15 +293,18 @@ void Game::NextTurn()
 		std::vector<std::string> options = {
 			"進行擲骰",
 			"使用道具",
-			//"作弊"
 		};
 		// 使用true參數表示顯示地圖，但不允許輸入指令
-		int choice = Monopoly::GetUserChoice(question, options, true, false);
+		int choice = Monopoly::GetUserChoice(question, options, true, true);
 
 		if (choice == 0) {
 			// 直接進行擲骰，不顯示額外提示
 			int roll = RollDiceWithAsciiAnimation();
-			currentPlayer->Move(roll, gameMap->getSize());
+			for (int i = 0; i < roll; ++i) {
+				currentPlayer->Move(1, gameMap->getSize());
+				Clear();
+				Monopoly::sleepMS(100);
+			}
 			int pos = currentPlayer->GetPosition();
 			std::cout << currentPlayer->GetName() << " 移動到第 " << pos << " 格。\n";
 
@@ -1098,232 +1155,6 @@ Player* Game::getCurrentPlayer() {
 		return players[currentPlayerIdx];
 	}
 	return nullptr;
-}
-
-// return false 表玩家得以繼續行動，return true 表玩家回合結束
-bool Game::HandleHiddenCommand(const std::string& input) {
-	std::istringstream iss(input);
-	std::string cmd;
-	iss >> cmd;
-
-	Player* p = getCurrentPlayer();
-
-	if (cmd == "/help" || cmd == "/list") {
-		std::cout << "可用指令有：/move /get /give /card /gamestate /info /minigame /refresh\n";
-	}
-	else if (cmd == "/move") {
-		int steps;
-		if (iss >> steps) {
-			std::cout << "使用指令移動 " << steps << " 步。\n";
-			p->Move(steps, gameMap->getSize());
-			auto currentTile = gameMap->GetTileAt(p->GetPosition());
-			currentTile->OnLand(p);
-			return true;
-		}
-		else {
-			std::cout << "格式錯誤！請使用 /move [步數]\n";
-			Monopoly::WaitForEnter();
-			return false;
-		}
-	}
-	else if (cmd == "/get") {
-		// Parse player name and amount
-		std::string playerName;
-		int amount;
-
-		// Check if there's a player name
-		if (iss >> playerName) {
-			// If the first argument is a number, it's just an amount
-			try {
-				amount = std::stoi(playerName);
-				// This is just /get <amount>
-				p->BuyProperty(-amount); // Negative price means adding money
-				std::cout << "已給予自己 $" << amount << " 元。\n";
-			}
-			catch (const std::exception&) {
-				// This is /get <player> <amount>
-				if (iss >> amount) {
-					// Find the target player
-					Player* targetPlayer = nullptr;
-
-					// Special case for bank
-					if (playerName == "bank") {
-						targetPlayer = &Monopoly::bank;
-					}
-					else {
-						// Search through all players
-						for (auto& player : players) {
-							if (player->GetName() == playerName) {
-								targetPlayer = player;
-								break;
-							}
-						}
-					}
-
-					if (!targetPlayer) {
-						std::cout << "找不到玩家：" << playerName << std::endl;
-					}
-					else {
-						targetPlayer->BuyProperty(-amount);
-						std::cout << "已給予 " << playerName << " $" << amount << " 元。\n";
-					}
-				}
-				else {
-					std::cout << "格式錯誤！請使用 /get <金額> 或 /get <玩家> <金額>\n";
-				}
-			}
-		}
-		else {
-			std::cout << "格式錯誤！請使用 /get <金額> 或 /get <玩家> <金額>\n";
-		}
-
-		Monopoly::WaitForEnter();
-		return false;
-	}
-	else if (cmd == "/give") {
-		std::vector<std::string> names;
-
-		for (int i = 0; i < players.size(); i++) {
-			std::string name = "玩家" + std::string(1, 'A' + i) + ": " + players[i]->GetName();
-			if (p == players[i])name += "（不得選擇自己）";
-			names.push_back(name);
-		}
-
-		int choice = Monopoly::GetUserChoice("", names);
-		Player* chosenP = p;
-
-		switch (choice) {
-		case 0:
-			if (p == players[0]) {
-				std::cout << "不能選擇自己！\n";
-				Monopoly::WaitForEnter();
-				return false;
-			}
-			chosenP = players[0];
-			break;
-		case 1:
-			if (p == players[1]) {
-				std::cout << "不能選擇自己！\n";
-				Monopoly::WaitForEnter();
-				return false;
-			}
-			chosenP = players[1];
-			break;
-		case 2:
-			if (p == players[2]) {
-				std::cout << "不能選擇自己！\n";
-				Monopoly::WaitForEnter();
-				return false;
-			}
-			chosenP = players[2];
-			break;
-		case 3:
-			if (p == players[3]) {
-				std::cout << "不能選擇自己！\n";
-				Monopoly::WaitForEnter();
-				return false;
-			}
-			chosenP = players[3];
-			break;
-		}
-
-		int money;
-		std::cout << "輸入給予金額：";
-		std::cin >> money;
-
-		p->Pay(chosenP, money);
-
-		std::cout << "執行指令：給予玩家 " << chosenP->GetName() << " " << to_string(money) << " 元。";
-
-		Monopoly::WaitForEnter();
-		return false;
-	}
-	else if (cmd == "/card") {
-		// 商品列表
-		std::vector<std::string> itemNames = {
-			"控制骰子"
-		};
-
-		do {
-			std::vector<std::string> goods;
-
-			for (size_t i = 0; i < itemNames.size(); ++i) {
-				goods.push_back(itemNames[i]);
-			}
-
-			goods.push_back("離開");
-
-			int choice = Monopoly::GetUserChoice("", goods);
-
-			// 檢查是否選擇離開
-			if (choice == static_cast<int>(goods.size()) - 1) break;
-
-			// 確保索引有效
-			if (choice >= 0 && choice < itemNames.size()) {
-				p->AddItem(new ControlDiceItem());
-				std::cout << "取得指定卡片！\n";
-			}
-
-			Monopoly::WaitForEnter();
-		} while (true);
-
-		return false;
-	}
-	else if (cmd == "/gamestate") {
-		gameOver = true;
-	}
-	else if (cmd == "/info") {
-		// Display information about all players
-		PrintPlayerStatus();
-		Monopoly::WaitForEnter();
-		return false;
-	}
-	else if (cmd == "/minigame") {
-		int game;
-		if (iss >> game) {
-			if (game == 1) {
-				HorseRacing miniGame1;
-
-				Monopoly::UpdateScreen();
-				std::cout << "意外走進賭馬場\n";
-				Monopoly::WaitForEnter();
-				miniGame1.init(p);
-				miniGame1.gameStart();
-
-				return true;
-			}
-			else if (game == 2) {
-				SheLongMen miniGame2;
-
-				Monopoly::UpdateScreen();
-				std::cout << "意外走進賭場\n";
-				Monopoly::WaitForEnter();
-				miniGame2.init(p);
-				miniGame2.gameStart();
-
-				return true;
-			}
-			else {
-				std::cout << "格式錯誤！請使用 /minigame [1 or 2]\n";
-				Monopoly::WaitForEnter();
-				return false;
-			}
-		}
-		else {
-			std::cout << "格式錯誤！請使用 /minigame [1 or 2]\n";
-			Monopoly::WaitForEnter();
-			return false;
-		}
-	}
-	else if (cmd == "/refresh") {
-		Monopoly::UpdateScreen();
-		return false;
-	}
-	else {
-		std::cout << "無效指令：" << cmd << "\n";
-		Monopoly::WaitForEnter();
-		return false;
-	}
 }
 
 bool Game::processCommand(std::shared_ptr<Player> player, const std::string& input) {

@@ -61,7 +61,7 @@ int main() {
 	Game game;
 	Monopoly::game = &game;
 
-	//ShowWaveLogo();
+	ShowWaveLogo();
 	system("cls");
 
 	// 檢查是否有存檔
