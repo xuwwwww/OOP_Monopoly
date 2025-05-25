@@ -123,6 +123,7 @@ void Game::InitGame()
 
 	Clear();
 	std::cout << "## 輸入玩家設定 ##\n";
+	int money, win_money;
 	for (int i = 0; i < playerNum; i++) {
 		std::string name;
 		while (true) {
@@ -146,11 +147,13 @@ void Game::InitGame()
 		}
 
 		Player* p;
-		if (data["init"]["money"].is_number())
+		if (data["init"]["money"].is_number()) {
 			p = new Player(name, colors[i], data["init"]["money"]);
-		else
+			money = data["init"]["money"];
+		}
+		else {
 			p = new Player(name, colors[i], 1000);
-
+		}
 		players.push_back(p);
 	}
 
@@ -158,7 +161,7 @@ void Game::InitGame()
 	for (auto& a : data["init"]["items"].items()) {
 		itemName = a.key();
 		if (itemName != "") {
-			if (itemName == u8"遙控骰子") {
+			if (itemName == u8"控制骰子") {
 				for (auto& p : players) {
 					for (int i = 0; i < a.value(); ++i)
 						p->AddItem(new ControlDiceItem());
@@ -176,12 +179,23 @@ void Game::InitGame()
 						p->AddItem(new RocketCard());
 				}
 			}
+			else if (itemName == u8"摧毀卡") {
+				for (auto& p : players) {
+					for (int i = 0; i < a.value(); ++i)
+						p->AddItem(new DestroyCard());
+				}
+			}
 		}
 	}
 
-	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
+	if (data["init"]["winMoney"].is_number())win_money = data["init"]["winMoney"];
+	winMoney = win_money;
 
-	Clear(); // 在玩家設定完成後清除畫面並顯示初始狀態
+	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
+	std::cout << "設定起始資金：" << std::to_string(money) << std::endl;
+	std::cout << "勝利金額：" << std::to_string(winMoney) << std::endl;
+
+	// Clear(); // 在玩家設定完成後清除畫面並顯示初始狀態
 	Monopoly::WaitForEnter();
 }
 
@@ -417,7 +431,7 @@ bool Game::CheckWinCondition()
 
 	// 檢查是否有玩家達到資金條件獲勝
 	for (size_t i = 0; i < players.size(); i++) {
-		if (players[i]->GetMoney() >= 2000) {
+		if (players[i]->GetMoney() >= winMoney) {
 			std::cout << "\n" << players[i]->GetName() << " 贏得勝利！" << std::endl;
 			gameOver = true;
 			return true;

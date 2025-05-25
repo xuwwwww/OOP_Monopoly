@@ -122,6 +122,7 @@ public:
 	bool gameEnd = false;
 
 private:
+	int winMoney = 2000;			// 勝利金額
 	bool gameOver;					// 是否結束遊戲
 	CommandHandler commandHandler;  // 指令處理器
 
