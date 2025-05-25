@@ -15,8 +15,8 @@ public:
 	/** 是否在醫院中 */
 	bool inHospital = false;
 
-	/** 住院天數 */
-	int hosipitalDay = 0;
+	/** 需要住院的天數 */
+	int hospitalDay = 0;
 
 	/**
 	 * 拿玩家名字
@@ -92,11 +92,6 @@ public:
 	 * 付錢：把錢轉給別人
 	 */
 	void Pay(Player* other, int amount);
-
-	/**
-	 * 印出玩家資訊：啥名字、位置跟多少錢
-	 */
-	void PrintStatus();
 
 private:
 	/** 玩家名稱 */

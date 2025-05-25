@@ -74,10 +74,15 @@ StartTile::StartTile(int n)
 	number = n;
 }
 
+std::string StartTile::GetName()
+{
+	return name;
+}
+
 void StartTile::OnLand(Player* p)
 {
 	Monopoly::bank.Pay(p, 200);
-	std::cout << "回到起點格: 獎勵200元\n";
+	std::cout << "經過起點格: 獎勵200元\n";
 }
 
 PropertyTile::PropertyTile(int _id, int _price, std::string _name, int n)
@@ -131,7 +136,7 @@ void PropertyTile::OnLand(Player* p)
 		"購買",
 		"放棄"
 		};
-		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
+		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options, true);
 
 		if (choice == 0) {
 			if (p->BuyProperty(price)) {
@@ -147,11 +152,11 @@ void PropertyTile::OnLand(Player* p)
 	else if (owner == p) {
 		if (level >= 2) {
 			std::vector<std::string> sellOptions = {
-				"否，保留土地"
-				"是，要",
+				"否，保留土地",
+				"是，升級土地",
 			};
 			std::string sellQuestion = "土地已升至最高級！\n是否要出售這塊土地？你可以獲得 150 元。";
-			int sellChoice = Monopoly::GetUserChoice(getHouse(level) + sellQuestion, sellOptions);
+			int sellChoice = Monopoly::GetUserChoice(getHouse(level) + sellQuestion, sellOptions, true);
 
 			if (sellChoice == 0) {
 				p->SellProperty(this, 150);
@@ -166,11 +171,11 @@ void PropertyTile::OnLand(Player* p)
 				+ std::to_string(p->GetMoney()) + " 元"
 				+ "或是出售這塊土地可以獲得 150 元。";
 			std::vector<std::string> options = {
-			"升級",
-			"放棄"
-			"出售這塊地（獲得 150 元）"
+			"升級土地",
+			"放棄",
+			"出售土地（獲得 150 元）"
 			};
-			int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
+			int choice = Monopoly::GetUserChoice(getHouse(level) + question, options, true);
 
 			if (choice == 0) {
 				if (p->BuyProperty(300)) {
@@ -222,7 +227,7 @@ void ShopTile::OnLand(Player* p)
 		"否"
 	};
 
-	int choice = Monopoly::GetUserChoice(getHouse(3) + question, options);
+	int choice = Monopoly::GetUserChoice(getHouse(3) + question, options, true);
 	if (choice == 1) return;
 
 	// 商品列表
@@ -252,7 +257,7 @@ void ShopTile::OnLand(Player* p)
 		goods.push_back("離開");
 
 		std::string welcome = "歡迎光臨商店!";
-		choice = Monopoly::GetUserChoice(getHouse(3) + welcome, goods);
+		choice = Monopoly::GetUserChoice(getHouse(3) + welcome, goods, true);
 
 		// 檢查是否選擇離開
 		if (choice == static_cast<int>(goods.size()) - 1) break;
@@ -311,10 +316,11 @@ void HospitalTile::OnLand(Player* p)
 	std::cout << getHouse(4);
 	if (!p->inHospital) {
 		std::cout << "進醫院休息三天！";
+		p->hospitalDay = 3;
 		p->inHospital = true;
 	}
 	else {
-		p->hosipitalDay++;
+		p->hospitalDay--;
 	}
 }
 
@@ -326,7 +332,7 @@ ChanceTile::ChanceTile(int n)
 
 void ChanceTile::OnLand(Player* p)
 {
-	Monopoly::GetUserChoice(getHouse(5) + "機會格，來抽取機會吧!!!", { "抽" });
+	Monopoly::GetUserChoice(getHouse(5) + "機會格，來抽取機會吧!!!", { "抽" }, true);
 	char chance = rand() % 9;
 
 	std::vector<PropertyTile*> ownedProperties;
@@ -345,12 +351,12 @@ void ChanceTile::OnLand(Player* p)
 	case 1:
 		std::cout << "受傷暫停行動1次\n";
 		p->inHospital = true;
-		p->hosipitalDay = 1;
+		p->hospitalDay = 1;
 		break;
 	case 2:
 		std::cout << "生病住院2回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 0;
+		p->hospitalDay = 2;
 		break;
 	case 3:
 		std::cout << "中了樂透小獎，獲得 300 元\n";
@@ -376,7 +382,7 @@ void ChanceTile::OnLand(Player* p)
 		}
 		else {
 			propertyNames.push_back("放棄升級");
-			int choice = Monopoly::GetUserChoice(getHouse(4) + "選擇要免費升級的土地：", propertyNames);
+			int choice = Monopoly::GetUserChoice(getHouse(4) + "選擇要免費升級的土地：", propertyNames, true);
 
 			if (choice < static_cast<int>(ownedProperties.size())) {
 				PropertyTile* selectedProperty = ownedProperties[choice];
@@ -399,7 +405,7 @@ void ChanceTile::OnLand(Player* p)
 	case 7:
 		std::cout << "食物中毒，住院治療，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 1;
+		p->hospitalDay = 1;
 		break;
 	case 8:
 		std::cout << "意外走進賭場\n";
@@ -418,7 +424,7 @@ FateTile::FateTile(int n)
 
 void FateTile::OnLand(Player* p)
 {
-	Monopoly::GetUserChoice(getHouse(5) + "命運格，來抽取命運吧!!!", { "抽" });
+	Monopoly::GetUserChoice(getHouse(5) + "命運格，來抽取命運吧!!!", { "抽" }, true);
 	char fate = rand() % 10;
 
 	switch (fate) {
@@ -433,12 +439,12 @@ void FateTile::OnLand(Player* p)
 	case 2:
 		std::cout << "感冒了，需要休息一回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 1;
+		p->hospitalDay = 1;
 		break;
 	case 3:
 		std::cout << "踩到釘子，去醫院打破傷風針，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 1;
+		p->hospitalDay = 1;
 		break;
 	case 4:
 		std::cout << "投資股票獲利，獲得 200 元\n";
@@ -463,7 +469,7 @@ void FateTile::OnLand(Player* p)
 	case 9:
 		std::cout << "突發高燒，需要住院，暫停行動1回合\n";
 		p->inHospital = true;
-		p->hosipitalDay = 1;
+		p->hospitalDay = 1;
 		break;
 	}
 }
@@ -479,7 +485,7 @@ void MiniGameTile::OnLand(Player* p)
 	int choice = Monopoly::GetUserChoice(getHouse(5) + "遊玩小遊戲", {
 		"賭馬",
 		"射龍門"
-		});
+		}, true);
 	HorseRacing miniGame1;
 	SheLongMen miniGame2;
 	switch (choice) {

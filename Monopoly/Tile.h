@@ -46,11 +46,18 @@ public:
  * 起點格（每回合經過會加錢）
  */
 class StartTile : public Tile {
+private:
+	std::string name = "start";
 public:
 	/**
 	 * 建構起點格，預設顏色資訊
 	 */
 	StartTile(int);
+
+	/**
+	 * 取得名稱
+	 */
+	std::string GetName() override;
 
 	/**
 	 * 玩家抵達起點格時觸發效果

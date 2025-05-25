@@ -450,7 +450,7 @@ bool CommandHandler::HandleInfoCommand(std::shared_ptr<Player> player, const std
 
 		std::string status;
 		if (game->players[i]->inHospital) {
-			status = "住院 (" + std::to_string(game->players[i]->hosipitalDay) + ")";
+			status = "住院 (" + std::to_string(game->players[i]->hospitalDay) + ")";
 		}
 		else {
 			status = "正常";

@@ -1,8 +1,4 @@
-﻿  CommandHandler.cpp
-C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\CommandHandler.cpp(447,20): warning C4018: '<': signed/unsigned 不相符
-  Game.cpp
-C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(506,20): warning C4018: '<': signed/unsigned 不相符
-C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(992,22): warning C4018: '<': signed/unsigned 不相符
-  正在產生程式碼...
-  LINK : 最後的累加連結找不到或未建置 C:\Users\user\Desktop\N+++++\HW\from git\Debug\Monopoly.exe，正在執行完整連結
+﻿  main.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(45,22): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(50,22): warning C4018: '<': signed/unsigned 不相符
   Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\from git\Debug\Monopoly.exe

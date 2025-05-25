@@ -222,8 +222,3 @@ void Player::Pay(Player* other, int amount)
 		money -= amount; // ¤ä¥I¤è¦©´Ú
 	}
 }
-
-void Player::PrintStatus()
-{
-
-}

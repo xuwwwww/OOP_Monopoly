@@ -58,13 +58,12 @@ void ShowWaveLogo() {
 }
 
 int main() {
+	ShowWaveLogo();
+	system("cls");
+
 	while (true) {
 		Game game;
 		Monopoly::game = &game;
-
-		ShowWaveLogo();
-		system("cls");
-
 
 		// 檢查是否有存檔
 		if (game.HasSavedGame()) {

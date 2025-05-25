@@ -2,6 +2,8 @@
 #include "Player.h"
 #include "Monopoly.h"
 #include "Game.h"
+
+#include <algorithm>
 #include <conio.h>
 #include <iostream>
 #include <string>
@@ -107,7 +109,7 @@ bool RocketCard::Use(Player* p) {
 	// 將選擇的玩家送入醫院
 	Player* targetPlayer = availablePlayers[choice];
 	targetPlayer->inHospital = true;
-	targetPlayer->hosipitalDay = 0;  // 從0開始計數，需要過兩回合
+	targetPlayer->hospitalDay = 2;
 
 	std::cout << targetPlayer->GetName() << " 被送入醫院，將住院兩回合！" << std::endl;
 	Monopoly::WaitForEnter();
@@ -223,7 +225,12 @@ bool DestroyCard::Use(Player* p) {
 	// 選擇要摧毀的地產
 	std::vector<Tile*> properties = targetPlayer->GetProperty();
 	std::vector<std::string> propertyOptions;
-	for (Tile* t : properties) {
+	std::vector<Tile*>tmp;
+	for (size_t j = 0; j < properties.size(); j++) {
+		tmp.push_back(properties[j]);
+	}
+	sort(tmp.begin(), tmp.end());
+	for (Tile* t : tmp) {
 		propertyOptions.push_back(t->GetName() + " (編號 " + std::to_string(t->number) + ")");
 	}
 	if (propertyOptions.empty()) {

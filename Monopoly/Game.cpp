@@ -242,19 +242,18 @@ void Game::NextTurn()
 	if (currentPlayer->inHospital) {
 		// 顯示住院狀態
 		std::cout << currentPlayer->GetName() << " 正在住院，已經過了 "
-			<< currentPlayer->hosipitalDay << " 天。" << std::endl;
+			<< currentPlayer->hospitalDay << " 天。" << std::endl;
 
-		if (currentPlayer->hosipitalDay >= 2) {
-			// 已經住院3天了(0,1,2)，可以出院
+		if (currentPlayer->hospitalDay == 0) {
 			std::cout << "\n" << currentPlayer->GetName() << " 已出院！\n";
 			currentPlayer->inHospital = false;
-			currentPlayer->hosipitalDay = 0;
+			currentPlayer->hospitalDay = 0;
 		}
 		else {
 			// 顯示出院選項
 			std::vector<std::string> hospitalOptions = {
-				"擲骰子（擲出4點或以上即可出院）",
-				"支付$50出院費",
+				"擲骰子（擲出 4 點或以上即可出院）",
+				"支付 $50 出院費",
 				"乖乖在醫院休養"
 			};
 
@@ -268,12 +267,12 @@ void Game::NextTurn()
 					// 成功出院
 					std::cout << "擲出了 " << roll << " 點，成功出院！" << std::endl;
 					currentPlayer->inHospital = false;
-					currentPlayer->hosipitalDay = 0;
+					currentPlayer->hospitalDay = 0;
 				}
 				else {
 					// 失敗，繼續住院
 					std::cout << "擲出了 " << roll << " 點，未達到4點，需繼續住院。" << std::endl;
-					currentPlayer->hosipitalDay++;
+					currentPlayer->hospitalDay--;
 					playerTurnCompleted = true;
 				}
 			}
@@ -283,20 +282,20 @@ void Game::NextTurn()
 					currentPlayer->BuyProperty(50); // 扣除50元出院費
 					std::cout << currentPlayer->GetName() << " 支付了$50出院費，提前出院！" << std::endl;
 					currentPlayer->inHospital = false;
-					currentPlayer->hosipitalDay = 0;
+					currentPlayer->hospitalDay = 0;
 				}
 				else {
 					std::cout << "你沒有足夠的錢支付出院費！" << std::endl;
 					// 增加住院天數並跳過回合
-					currentPlayer->hosipitalDay++;
+					currentPlayer->hospitalDay--;
 					playerTurnCompleted = true;
 				}
 			}
 			else {
 				// 選擇繼續住院
 				std::cout << currentPlayer->GetName() << " 選擇繼續在醫院休養。" << std::endl;
-				// 增加住院天數並跳過回合
-				currentPlayer->hosipitalDay++;
+				// 減少住院天數並跳過回合
+				currentPlayer->hospitalDay--;
 				playerTurnCompleted = true;
 			}
 		}
@@ -311,18 +310,29 @@ void Game::NextTurn()
 		// 使用true參數表示顯示地圖
 		int choice = Monopoly::GetUserChoice(question, options, true, true);
 
+		bool passStart = false;
+		Tile* start = NULL;
 		if (choice == 0) {
 			// 直接進行擲骰，不顯示額外提示
 			int roll = RollDiceWithAsciiAnimation();
 			for (int i = 0; i < roll; ++i) {
 				currentPlayer->Move(1, gameMap->getSize());
+				if (i != roll - 1 && gameMap->GetTileAt(currentPlayer->GetPosition())->GetName() == "start") {
+					passStart = true;
+					start = gameMap->GetTileAt(currentPlayer->GetPosition());
+				}
 				Clear();
 				Monopoly::sleepMS(100);
 			}
 			int pos = currentPlayer->GetPosition();
 			std::cout << currentPlayer->GetName() << " 移動到第 " << pos << " 格。\n";
 
+			if (passStart) {
+				start->OnLand(currentPlayer);
+			}
+			Monopoly::WaitForEnter();
 			auto currentTile = gameMap->GetTileAt(pos);
+
 			currentTile->OnLand(currentPlayer);
 			playerTurnCompleted = true; // 玩家回合完成
 		}
@@ -511,7 +521,7 @@ void Game::PrintPlayerStatus()
 		std::string status;
 
 		if (players[i]->inHospital) {
-			status = "住院中 (" + std::to_string(players[i]->hosipitalDay) + ")";
+			status = "住院中 (" + std::to_string(players[i]->hospitalDay) + ")";
 		}
 		else {
 			status = "正常";
@@ -672,7 +682,7 @@ bool Game::SaveGame(const std::string& filename)
 			saveFile << "      \"money\": " << p->GetMoney() << ",\n";
 			saveFile << "      \"position\": " << p->GetPosition() << ",\n";
 			saveFile << "      \"inHospital\": " << (p->inHospital ? "true" : "false") << ",\n";
-			saveFile << "      \"hospitalDay\": " << p->hosipitalDay << ",\n";
+			saveFile << "      \"hospitalDay\": " << p->hospitalDay << ",\n";
 
 			// 保存道具清單
 			saveFile << "      \"items\": [\n";
@@ -988,7 +998,7 @@ bool Game::LoadGame(const std::string& filename)
 			Player* player = new Player(name, color, money);
 			player->SetPosition(position);
 			player->inHospital = inHospital;
-			player->hosipitalDay = hospitalDay;
+			player->hospitalDay = hospitalDay;
 			for (int i = 0; i < items.size(); i++) {
 				player->AddItem(items[i]);
 			}

@@ -51,7 +51,7 @@ void SheLongMen::init(Player* player) {
     std::string welcome("歡迎遊玩射龍門\n選擇下注的金額");
     bool flag = true;
     do {
-        switch (Monopoly::GetUserChoice(welcome, bets)) {
+        switch (Monopoly::GetUserChoice(welcome, bets, true)) {
         case 0:
             betMoney = 0;
             break;
@@ -82,7 +82,7 @@ void SheLongMen::gameStart() {
         int choice = Monopoly::GetUserChoice(notify, {
             "範圍內",
             "範圍外"
-            });
+            }, true);
 
         std::cout << "第三張牌: " << face2String(nextCard) << std::endl;
 
@@ -105,7 +105,7 @@ void SheLongMen::gameStart() {
         int choice = Monopoly::GetUserChoice(notify, {
             "小",
             "大"
-            });
+            }, true);
 
         std::cout << "第三張牌: " << face2String(nextCard) << std::endl;
 
