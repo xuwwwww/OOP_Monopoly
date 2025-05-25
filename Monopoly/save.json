@@ -1,5 +1,5 @@
 {
-  "currentPlayerIdx": 1,
+  "currentPlayerIdx": 0,
   "playerCount": 2,
   "map": {
     "size": 28,
@@ -79,7 +79,7 @@
       {
         "index": 12,
         "name": "Australia",
-        "ownerIdx": 0,
+        "ownerIdx": -1,
         "level": 0
       },
       {
@@ -115,7 +115,7 @@
       {
         "index": 18,
         "name": "China",
-        "ownerIdx": 1,
+        "ownerIdx": -1,
         "level": 0
       },
       {
@@ -178,23 +178,39 @@
     {
       "name": "A",
       "color": "red",
-      "money": 800,
-      "position": 12,
+      "money": 1000,
+      "position": 4,
       "inHospital": false,
       "hospitalDay": 0,
       "items": [
+        {
+          "name": "Control Dice",
+          "type": "item"
+        },
+        {
+          "name": "Rocket Card",
+          "type": "item"
+        },
+        {
+          "name": "Fate Card",
+          "type": "item"
+        },
+        {
+          "name": "Destroy Card",
+          "type": "item"
+        }
       ]
     },
     {
       "name": "B",
       "color": "yellow",
-      "money": 1100,
-      "position": 18,
+      "money": 1000,
+      "position": 0,
       "inHospital": false,
       "hospitalDay": 0,
       "items": [
         {
-          "name": "Rocket Card",
+          "name": "Control Dice",
           "type": "item"
         }
       ]

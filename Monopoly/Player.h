@@ -49,9 +49,9 @@ public:
 	std::vector<Item*> GetItem();
 
 	/**
-	 * 使用道具（還沒做好）
+	 * 使用道具
 	 */
-	void UseItem(Item* item);
+	bool UseItem(Item* item);
 
 	/**
 	 *  將 item 加入 vector
@@ -81,7 +81,7 @@ public:
 	/**
 	 * 賣地
 	 */
-	void SellProperty(Tile* p);
+	void SellProperty(Tile* p, int);
 
 	/**
 	 * 回傳 property vector
@@ -117,3 +117,5 @@ private:
 	/** 擁有的土地 */
 	std::vector<Tile*>property;
 };
+
+

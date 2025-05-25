@@ -150,10 +150,10 @@ void Game::InitGame()
 			p = new Player(name, colors[i], data["init"]["money"]);
 		else
 			p = new Player(name, colors[i], 1000);
-		
+
 		players.push_back(p);
 	}
-	
+
 	std::string itemName("");
 	for (auto& a : data["init"]["items"].items()) {
 		itemName = a.key();
@@ -244,7 +244,7 @@ void Game::NextTurn()
 				"乖乖在醫院休養"
 			};
 
-			std::string hospitalPrompt = "你正在醫院休養，選擇行動：";
+			std::string hospitalPrompt = "輪到 " + currentPlayer->GetName() + " 的回合。" + "\n你正在醫院休養，選擇行動：";
 			int hospitalChoice = Monopoly::GetUserChoice(hospitalPrompt, hospitalOptions, true, false);
 
 			if (hospitalChoice == 0) {
@@ -294,7 +294,7 @@ void Game::NextTurn()
 			"進行擲骰",
 			"使用道具",
 		};
-		// 使用true參數表示顯示地圖，但不允許輸入指令
+		// 使用true參數表示顯示地圖
 		int choice = Monopoly::GetUserChoice(question, options, true, true);
 
 		if (choice == 0) {
@@ -339,27 +339,27 @@ void Game::NextTurn()
 					size_t originalItemCount = items.size();
 
 					// 使用道具
-					currentPlayer->UseItem(selectedItem);
+					if (currentPlayer->UseItem(selectedItem)) {
+						// 檢查使用道具後是否需要進行其他動作
+						// 如果是控制骰子道具，玩家已經移動位置，視同完成回合
+						if (selectedItem->GetName() == "Control Dice") {
+							// 取得玩家當前位置
+							int pos = currentPlayer->GetPosition();
+							std::cout << currentPlayer->GetName() << " 移動到第 " << pos << " 格。\n";
 
-					// 檢查使用道具後是否需要進行其他動作
-					// 如果是控制骰子道具，玩家已經移動位置，視同完成回合
-					if (selectedItem->GetName() == "控制骰子") {
-						// 取得玩家當前位置
-						int pos = currentPlayer->GetPosition();
-						std::cout << currentPlayer->GetName() << " 移動到第 " << pos << " 格。\n";
-
-						// 觸發當前所在格子的效果
-						auto currentTile = gameMap->GetTileAt(pos);
-						currentTile->OnLand(currentPlayer);
-						playerTurnCompleted = true; // 玩家回合完成
+							// 觸發當前所在格子的效果
+							auto currentTile = gameMap->GetTileAt(pos);
+							currentTile->OnLand(currentPlayer);
+							playerTurnCompleted = true; // 玩家回合完成
+						}
+						else {
+							// 其他類型的道具使用後，玩家可以繼續選擇行動
+							// 不設定 playerTurnCompleted 為 true，讓玩家回到行動選單
+							continue;
+						}
+						delete selectedItem; // 刪除已使用的道具
 					}
-					else {
-						// 其他類型的道具使用後，玩家可以繼續選擇行動
-						// 不設定 playerTurnCompleted 為 true，讓玩家回到行動選單
-						continue;
-					}
 
-					delete selectedItem; // 刪除已使用的道具
 				}
 				else {
 					// 選擇返回
@@ -506,7 +506,20 @@ void Game::PrintPlayerStatus()
 		// 道具字串
 		std::string itemStr = players[i]->GetItem().empty() ? "無" : "";
 		for (size_t j = 0; j < players[i]->GetItem().size(); j++) {
-			itemStr += players[i]->GetItem()[j]->GetName();
+			if (players[i]->GetItem()[j]->GetName() == "Control Dice") {
+				itemStr += "[骰]";
+			}
+			else if (players[i]->GetItem()[j]->GetName() == "Rocket Card") {
+				itemStr += "[火]";
+			}
+			else if (players[i]->GetItem()[j]->GetName() == "Fate Card") {
+				itemStr += "[命]";
+			}
+			else if (players[i]->GetItem()[j]->GetName() == "Destroy Card") {
+				itemStr += "[毀]";
+			}
+
+
 			if (j != players[i]->GetItem().size() - 1)
 				itemStr += ", ";
 		}
@@ -939,7 +952,8 @@ bool Game::LoadGame(const std::string& filename)
 					Item* newItem = NULL;
 					if (itemName == "Control Dice") newItem = new ControlDiceItem();
 					if (itemName == "Rocket Card") newItem = new RocketCard();
-					if (itemName == "FateCard") newItem = new FateCard();
+					if (itemName == "Fate Card") newItem = new FateCard();
+					if (itemName == "Destroy Card") newItem = new DestroyCard();
 
 					if (newItem) {
 						items.push_back(newItem);

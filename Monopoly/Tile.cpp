@@ -146,37 +146,46 @@ void PropertyTile::OnLand(Player* p)
 	}
 	else if (owner == p) {
 		if (level >= 2) {
-			std::cout << "土地已升至最高級！\n";
-			return;
-		}
-
-		std::string question = "是否要花費 300 元升級土地？\n你現在有 " + std::to_string(p->GetMoney()) + " 元";
-		std::vector<std::string> options = {
-		"升級",
-		"放棄"
-		};
-		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
-
-		if (choice == 0) {
-			if (p->BuyProperty(300)) {
-				std::cout << "\n升級成功！\n";
-				Upgrade();
-			}
-			else {
-				std::cout << "金錢不足，無法升級。\n";
-			}
-		}
-		else {
-			// 詢問是否販售土地
 			std::vector<std::string> sellOptions = {
-				"是，要出售這塊地（獲得 150 元）",
 				"否，保留土地"
+				"是，要",
 			};
-			std::string sellQuestion = "是否要出售這塊土地？你可以獲得 150 元。";
-			int sellChoice = Monopoly::GetUserChoice(sellQuestion, sellOptions);
+			std::string sellQuestion = "土地已升至最高級！\n是否要出售這塊土地？你可以獲得 150 元。";
+			int sellChoice = Monopoly::GetUserChoice(getHouse(level) + sellQuestion, sellOptions);
 
 			if (sellChoice == 0) {
-				p->SellProperty(this);
+				p->SellProperty(this, 150);
+				owner = nullptr;
+				level = 0;
+				std::cout << "\n土地已出售，獲得 150 元！\n";
+			}
+			// return;
+		}
+		else {
+			std::string question = "是否要花費 300 元升級土地？\n你現在有 "
+				+ std::to_string(p->GetMoney()) + " 元"
+				+ "或是出售這塊土地可以獲得 150 元。";
+			std::vector<std::string> options = {
+			"升級",
+			"放棄"
+			"出售這塊地（獲得 150 元）"
+			};
+			int choice = Monopoly::GetUserChoice(getHouse(level) + question, options);
+
+			if (choice == 0) {
+				if (p->BuyProperty(300)) {
+					std::cout << "\n升級成功！\n";
+					Upgrade();
+				}
+				else {
+					std::cout << "金錢不足，無法升級。\n";
+				}
+			}
+			else if (choice == 1) {
+				return;
+			}
+			else if (choice == 2) {
+				p->SellProperty(this, 150);
 				owner = nullptr;
 				level = 0;
 				std::cout << "\n土地已出售，獲得 150 元！\n";
@@ -218,10 +227,13 @@ void ShopTile::OnLand(Player* p)
 
 	// 商品列表
 	std::vector<std::string> itemNames = {
-		"控制骰子, 300元"
+		"控制骰子，300元",
+		"火箭卡，300元",
+		"命運卡，300元",
+		"摧毀卡，300元"
 	};
 	std::vector<int> itemPrices = {
-		300
+		300, 300, 300, 300
 	};
 
 	// 記錄商品是否已購買
@@ -250,10 +262,33 @@ void ShopTile::OnLand(Player* p)
 			if (purchased[choice]) {
 				std::cout << "此商品已經購買過，無法再次購買。\n";
 			}
-			else if (p->BuyItem(itemPrices[choice])) {
+			else if (choice == 0) {
 				p->AddItem(new ControlDiceItem());
 				purchased[choice] = true;
 				std::cout << "購買成功！\n";
+				Monopoly::WaitForEnter();
+				break;
+			}
+			else if (choice == 1) {
+				p->AddItem(new RocketCard());
+				purchased[choice] = true;
+				std::cout << "購買成功！\n";
+				Monopoly::WaitForEnter();
+				break;
+			}
+			else if (choice == 2) {
+				p->AddItem(new FateCard());
+				purchased[choice] = true;
+				std::cout << "購買成功！\n";
+				Monopoly::WaitForEnter();
+				break;
+			}
+			else if (choice == 3) {
+				p->AddItem(new DestroyCard());
+				purchased[choice] = true;
+				std::cout << "購買成功！\n";
+				Monopoly::WaitForEnter();
+				break;
 			}
 			else {
 				std::cout << "餘額不足，購買失敗。\n";

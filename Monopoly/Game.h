@@ -7,8 +7,6 @@
 #include <string>
 #include <memory>
 
-enum class State { INIT, START, MOVED, ROUND_END, FINISH };
-
 class Game
 {
 	// Make CommandHandler a friend class so it can access private members
@@ -119,9 +117,11 @@ public:
 
 	Map* gameMap;					// 地圖物件
 	std::vector<Player*> players;	// 所有玩家指標
+	int currentPlayerIdx;			// 目前回合的玩家索引
+
+	bool gameEnd = false;
 
 private:
-	int currentPlayerIdx;			// 目前回合的玩家索引
 	bool gameOver;					// 是否結束遊戲
 	CommandHandler commandHandler;  // 指令處理器
 

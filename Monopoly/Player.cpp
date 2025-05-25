@@ -49,12 +49,12 @@ std::vector<Item*> Player::GetItem()
 	return item;
 }
 
-void Player::UseItem(Item* item)
+bool Player::UseItem(Item* item)
 {
 	// 檢查道具是否為空指針
 	if (!item) {
 		std::cout << "錯誤：嘗試使用無效的道具！\n";
-		return;
+		return false;
 	}
 
 	// 檢查玩家是否擁有該道具
@@ -70,7 +70,7 @@ void Player::UseItem(Item* item)
 
 	if (!hasItem) {
 		std::cout << "錯誤：玩家未擁有此道具！\n";
-		return;
+		return false;
 	}
 
 	// 使用道具效果
@@ -78,10 +78,12 @@ void Player::UseItem(Item* item)
 	std::cout << "效果：" << item->GetDescription() << "\n";
 
 	// 呼叫道具的實際效果函數
-	item->Use(this);
-
-	// 使用後從玩家的道具清單中移除
-	this->item.erase(this->item.begin() + itemIndex);
+	if (item->Use(this)) {
+		// 使用後從玩家的道具清單中移除
+		this->item.erase(this->item.begin() + itemIndex);
+		return true;
+	}
+	else return false;
 }
 
 void Player::AddItem(Item* _item)
@@ -124,13 +126,14 @@ bool Player::BuyProperty(int price)
 	}
 }
 
-void Player::SellProperty(Tile* p)
+void Player::SellProperty(Tile* p, int get_money)
 {
 	auto it = std::find(property.begin(), property.end(), p);
 	if (it != property.end()) {
+		p->color = "";
 		property.erase(it);
 	}
-	money += 150;
+	money += get_money;
 }
 
 std::vector<Tile*> Player::GetProperty()

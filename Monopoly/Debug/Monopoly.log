@@ -1,4 +1,7 @@
-﻿  main.cpp
-C:\Users\user\Desktop\N+++++\HW\OOP_Monopoly\Monopoly\main.cpp(76,22): warning C4018: '<': signed/unsigned 不相符
-C:\Users\user\Desktop\N+++++\HW\OOP_Monopoly\Monopoly\main.cpp(81,22): warning C4018: '<': signed/unsigned 不相符
-  Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\OOP_Monopoly\Debug\Monopoly.exe
+﻿  Game.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(492,20): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(978,22): warning C4018: '<': signed/unsigned 不相符
+  Tile.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Tile.cpp(261,29): warning C4018: '<': signed/unsigned 不相符
+  正在產生程式碼...
+  Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\from git\Debug\Monopoly.exe

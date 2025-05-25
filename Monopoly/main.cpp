@@ -58,49 +58,61 @@ void ShowWaveLogo() {
 }
 
 int main() {
-	Game game;
-	Monopoly::game = &game;
+	while (true) {
+		Game game;
+		Monopoly::game = &game;
 
-	ShowWaveLogo();
-	system("cls");
+		ShowWaveLogo();
+		system("cls");
 
-	// 檢查是否有存檔
-	if (game.HasSavedGame()) {
-		std::cout << "發現上次未完成的遊戲進度！" << std::endl;
 
-		// 提供選項
-		std::string question = "是否要載入上次的遊戲進度？";
-		std::vector<std::string> options = {
-			"載入舊遊戲",
-			"開始新遊戲"
-		};
+		// 檢查是否有存檔
+		if (game.HasSavedGame()) {
+			std::cout << "發現上次未完成的遊戲進度！" << std::endl;
 
-		int choice = Monopoly::GetUserChoice(question, options);
+			// 提供選項
+			std::string question = "是否要載入上次的遊戲進度？";
+			std::vector<std::string> options = {
+				"載入舊遊戲",
+				"開始新遊戲"
+			};
 
-		if (choice == 0) {
-			// 載入舊遊戲
-			if (game.LoadGame()) {
-				std::cout << "繼續上次的遊戲！" << std::endl;
-				game.StartGame();
+			int choice = Monopoly::GetUserChoice(question, options);
+
+			if (choice == 0) {
+				// 載入舊遊戲
+				if (game.LoadGame()) {
+					std::cout << "繼續上次的遊戲！" << std::endl;
+					game.StartGame();
+				}
+				else {
+					std::cout << "載入失敗，將開始新遊戲。" << std::endl;
+					game.InitGame();
+					game.StartGame();
+				}
 			}
 			else {
-				std::cout << "載入失敗，將開始新遊戲。" << std::endl;
+				// 開始新遊戲前刪除舊存檔
+				game.DeleteSaveGame();
 				game.InitGame();
 				game.StartGame();
 			}
 		}
 		else {
-			// 開始新遊戲前刪除舊存檔
-			game.DeleteSaveGame();
+			// 沒有存檔，正常開始遊戲
 			game.InitGame();
 			game.StartGame();
 		}
+
+		std::cout << "是否要重新開始一局？(y/n)\n";
+		std::string ans;
+		std::cin >> ans;
+		if (ans != "Y" && ans != "y") {
+			break;
+		}
+
 	}
-	else {
-		// 沒有存檔，正常開始遊戲
-		game.InitGame();
-		game.StartGame();
-	}
+
 
 	return 0;
 }

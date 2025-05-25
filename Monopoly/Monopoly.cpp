@@ -72,7 +72,8 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 
 		if (cmd) {
 			std::cout << "\n請使用上下鍵選擇，按 Enter 確認，或按 / 輸入指令" << std::endl;
-		} else {
+		}
+		else {
 			std::cout << "\n請使用上下鍵選擇，按 Enter 確認" << std::endl;
 		}
 
@@ -85,17 +86,17 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 		else if (cmd && key == '/') {
 			// Command input mode
 			std::string input = Monopoly::tappingCommand();
-			
+
 			std::cout << std::endl;
-			
+
 			// Convert current player to shared_ptr for command processing
 			Player* currentPlayer = game->getCurrentPlayer();
 			if (currentPlayer) {
 				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter - we don't own the player
-				
+
 				// Process the command
 				if (game->processCommand(playerPtr, input)) {
-					// Command was processed, wait for user to acknowledge
+					// Command w processed, wait for user to acknowledge
 					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
 					_getch();
 				}
@@ -105,56 +106,56 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 					_getch();
 				}
 			}
-			
+
 			// Continue with the menu
 			continue;
 		}
 
 	} while (key != '\r');
 
-		//	else if (key == '\r') {
-		//	if (cmd) {
-		//		// 判斷是否是擲骰子選項，如果是則直接返回
-		//		if (options.size() > 0 && selected == 0 && options[0] == "進行擲骰") {
-		//			return selected;
-		//		}
+	//	else if (key == '\r') {
+	//	if (cmd) {
+	//		// 判斷是否是擲骰子選項，如果是則直接返回
+	//		if (options.size() > 0 && selected == 0 && options[0] == "進行擲骰") {
+	//			return selected;
+	//		}
 
-		//		// 改為詢問是否輸入指令
-		//		std::string input;
-		//		std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
-		//		std::getline(std::cin, input);
+	//		// 改為詢問是否輸入指令
+	//		std::string input;
+	//		std::cout << "\n請按 Enter 選擇，或輸入指令（以 / 開頭）: ";
+	//		std::getline(std::cin, input);
 
-		//		if (!input.empty() && input[0] == '/') {
-		//			// Convert current player to shared_ptr for command processing
-		//			Player* currentPlayer = game->getCurrentPlayer();
-		//			if (currentPlayer) {
-		//				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter
+	//		if (!input.empty() && input[0] == '/') {
+	//			// Convert current player to shared_ptr for command processing
+	//			Player* currentPlayer = game->getCurrentPlayer();
+	//			if (currentPlayer) {
+	//				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter
 
-		//				// Try to process the command with our new system first
-		//				if (game->processCommand(playerPtr, input)) {
-		//					// Wait for user acknowledgment
-		//					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
-		//					_getch();
-		//					continue;
-		//				}
-		//			}
+	//				// Try to process the command with our new system first
+	//				if (game->processCommand(playerPtr, input)) {
+	//					// Wait for user acknowledgment
+	//					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
+	//					_getch();
+	//					continue;
+	//				}
+	//			}
 
-		//			throw;
-		//		}
-		//		else {
-		//			// 空字串代表按下 Enter，不輸入指令
-		//			return selected;
-		//		}
-		//	}
-		//	else return selected;
-		//}
+	//			throw;
+	//		}
+	//		else {
+	//			// 空字串代表按下 Enter，不輸入指令
+	//			return selected;
+	//		}
+	//	}
+	//	else return selected;
+	//}
 
 
 	return selected;
 }
 
 void Monopoly::WaitForEnter() {
-	std::cout << "\n按下 Enter 鍵繼續...";
+	std::cout << "\n按下 Enter 鍵繼續...\n";
 	while (_getch() != '\r');
 }
 
