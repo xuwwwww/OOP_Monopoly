@@ -28,7 +28,7 @@
       "name": "gamestate",
       "description": "強制更改遊戲狀態",
       "usage": "/gamestate <狀態>",
-      "example": "/gamestate MOVED"
+      "example": "/gamestate finish"
     },
     {
       "name": "info",
@@ -79,6 +79,10 @@
     {
       "name": "命運卡",
       "description": "強制觸發命運事件"
+    },
+    {
+      "name": "摧毀卡",
+      "description": "摧毀一位玩家的一個地產"
     }
   ]
 }

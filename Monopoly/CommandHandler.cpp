@@ -261,7 +261,7 @@ bool CommandHandler::HandleMoveCommand(std::shared_ptr<Player> player, const std
 			tileName = "第 " + std::to_string(position) + " 格";
 		}
 
-		std::vector<std::string> options = {"是","否"};
+		std::vector<std::string> options = { "是","否" };
 		std::string question = "是否要觸發" + tileName + "的效果？";
 		int choice = Monopoly::GetUserChoice(question, options, true);
 
@@ -392,7 +392,7 @@ bool CommandHandler::HandleCardCommand(std::shared_ptr<Player> player, const std
 
 	if (args.empty()) {
 		std::cout << "用法: /card <卡牌名稱>" << std::endl;
-		std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡" << std::endl;
+		std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡，摧毀卡" << std::endl;
 		return false;
 	}
 
@@ -421,9 +421,14 @@ bool CommandHandler::HandleCardCommand(std::shared_ptr<Player> player, const std
 		std::cout << player->GetName() << " 獲得卡牌: 命運卡" << std::endl;
 		return true;
 	}
+	else if (cardName == "destroy card" || cardName == "摧毀卡" || cardName == "destroy") {
+		player->AddItem(new FateCard());
+		std::cout << player->GetName() << " 獲得卡牌: 摧毀卡" << std::endl;
+		return true;
+	}
 	else {
 		std::cout << "未知卡牌: " << cardName << std::endl;
-		std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡" << std::endl;
+		std::cout << "可用卡牌: 控制骰子, 火箭卡, 命運卡，摧毀卡" << std::endl;
 		return false;
 	}
 }
@@ -436,7 +441,7 @@ bool CommandHandler::HandleGameStateCommand(std::shared_ptr<Player> player, cons
 
 	if (args.empty()) {
 		std::cout << "用法: /gamestate <狀態>" << std::endl;
-		std::cout << "可用狀態: moved, finish" << std::endl;
+		std::cout << "可用狀態: finish" << std::endl;
 		return false;
 	}
 
@@ -447,14 +452,9 @@ bool CommandHandler::HandleGameStateCommand(std::shared_ptr<Player> player, cons
 		std::cout << "遊戲已標記為結束! 下回合將顯示最終結果。" << std::endl;
 		return true;
 	}
-	else if (stateStr == "moved") {
-		auto currentTile = game->gameMap->GetTileAt(player->GetPosition());
-		currentTile->OnLand(game->getCurrentPlayer());
-		return true;
-	}
 	else {
 		std::cout << "未知狀態: " << stateStr << std::endl;
-		std::cout << "可用狀態: moved, round_end, finish" << std::endl;
+		std::cout << "可用狀態: finish" << std::endl;
 		return false;
 	}
 }
@@ -540,11 +540,7 @@ bool CommandHandler::HandleListCommand(std::shared_ptr<Player> player, const std
 		std::cout << "1. 控制骰子 - 可以指定自己的骰子點數" << std::endl;
 		std::cout << "2. 火箭卡 - 讓指定玩家住院兩回合" << std::endl;
 		std::cout << "3. 命運卡 - 強制觸發命運事件" << std::endl;
-
-		std::cout << "\n可使用遊戲狀態:" << std::endl;
-		std::cout << "1. moved - 觸發停留地塊對應事件" << std::endl;
-		std::cout << "2. finish - 遊戲強制結束" << std::endl;
-
+		std::cout << "4. 摧毀卡 - 摧毀一位玩家的一個地產" << std::endl;
 	}
 	else {
 		for (auto& a : commands) {
