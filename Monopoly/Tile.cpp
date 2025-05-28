@@ -240,15 +240,18 @@ void ShopTile::OnLand(Player* p)
 	std::vector<int> itemPrices = {
 		300, 300, 300, 300
 	};
-
-	// 記錄商品是否已購買
-	std::vector<bool> purchased(itemNames.size(), false);
+	std::vector<Item*> items = {
+		new ControlDiceItem(),
+		new RocketCard(),
+		new FateCard(),
+		new DestroyCard()
+	};
 
 	do {
 		std::vector<std::string> goods;
 
 		for (size_t i = 0; i < itemNames.size(); ++i) {
-			if (purchased[i])
+			if (!items[i])
 				goods.push_back(itemNames[i] + "（已購買）");
 			else
 				goods.push_back(itemNames[i]);
@@ -264,36 +267,13 @@ void ShopTile::OnLand(Player* p)
 
 		// 確保索引有效
 		if (choice >= 0 && choice < itemNames.size()) {
-			if (purchased[choice]) {
+			if (!items[choice]) {
 				std::cout << "此商品已經購買過，無法再次購買。\n";
 			}
-			else if (choice == 0) {
-				p->AddItem(new ControlDiceItem());
-				purchased[choice] = true;
+			else if (p->BuyItem(itemPrices[choice])){
+				p->AddItem(items[choice]);
+				items[choice] = nullptr;
 				std::cout << "購買成功！\n";
-				Monopoly::WaitForEnter();
-				break;
-			}
-			else if (choice == 1) {
-				p->AddItem(new RocketCard());
-				purchased[choice] = true;
-				std::cout << "購買成功！\n";
-				Monopoly::WaitForEnter();
-				break;
-			}
-			else if (choice == 2) {
-				p->AddItem(new FateCard());
-				purchased[choice] = true;
-				std::cout << "購買成功！\n";
-				Monopoly::WaitForEnter();
-				break;
-			}
-			else if (choice == 3) {
-				p->AddItem(new DestroyCard());
-				purchased[choice] = true;
-				std::cout << "購買成功！\n";
-				Monopoly::WaitForEnter();
-				break;
 			}
 			else {
 				std::cout << "餘額不足，購買失敗。\n";
@@ -301,6 +281,10 @@ void ShopTile::OnLand(Player* p)
 		}
 		Monopoly::WaitForEnter();
 	} while (true);
+
+	for (int i = 0; i < items.size(); ++i) {
+		if (items[i]) delete items[i];
+	}
 }
 
 HospitalTile::HospitalTile(int n)
