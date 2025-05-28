@@ -9,6 +9,22 @@
 #include <algorithm>
 #include "../nlohmann/json.hpp"
 
+#include <windows.h>
+
+std::string utf8ToBig5(const std::string& utf8_str) {
+	// UTF-8 → UTF-16
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), -1, nullptr, 0);
+	std::wstring wstr(wlen, 0);
+	MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), -1, &wstr[0], wlen);
+
+	// UTF-16 → Big5
+	int blen = WideCharToMultiByte(950 /* Big5 code page */, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	std::string big5_str(blen, 0);
+	WideCharToMultiByte(950, 0, wstr.c_str(), -1, &big5_str[0], blen, nullptr, nullptr);
+
+	return big5_str;
+}
+
 // Using nlohmann json
 using json = nlohmann::json;
 
@@ -31,6 +47,20 @@ Player* CommandHandler::FindPlayerByName(const std::string& name) {
 }
 
 void CommandHandler::Initialize() {
+	std::map<std::string, std::function<bool(std::shared_ptr<Player> player, const std::vector<std::string>& args)>> handlers;
+
+	handlers["move"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleMoveCommand(player, args); };
+	handlers["get"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleGetCommand(player, args); };
+	handlers["give"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleGiveCommand(player, args); };
+	handlers["card"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleCardCommand(player, args); };
+	handlers["gamestate"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleGameStateCommand(player, args); };
+	handlers["info"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleInfoCommand(player, args); };
+	handlers["refresh"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleRefreshCommand(player, args); };
+	handlers["help"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleListCommand(player, args); };
+	handlers["list"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleListCommand(player, args); };
+	handlers["minigame"] = [this](std::shared_ptr<Player> player, const std::vector<std::string>& args) {return HandleMinigameCommand(player, args); };
+
+
 	// Try multiple possible paths for command.json
 	std::vector<std::string> possiblePaths = {
 		"../json/command.json",
@@ -66,10 +96,19 @@ void CommandHandler::Initialize() {
 		for (const auto& cmd : commandData["commands"]) {
 			Command command;
 			command.name = cmd["name"];
-			command.description = cmd["description"];
-			command.usage = cmd["usage"];
-			command.example = cmd["example"];
-			commands.push_back(command);
+			command.description = utf8ToBig5(cmd["description"]);
+			command.usage = utf8ToBig5(cmd["usage"]);
+			command.example = utf8ToBig5(cmd["example"]);
+			if (handlers.find(command.name) == handlers.end()) {
+				command.handler = [command](std::shared_ptr<Player> player, const std::vector<std::string>& args) {
+					std::cout << command.name << "指令缺少Handler\n";
+					return true;
+				};
+			}
+			else {
+				command.handler = handlers[command.name];
+			}
+			commands.emplace(cmd["name"], command);
 		}
 	}
 	catch (const std::exception& e) {
@@ -78,6 +117,7 @@ void CommandHandler::Initialize() {
 
 	file.close();
 }
+
 
 bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::string& input) {
 	if (input.empty() || input[0] != '/') {
@@ -102,32 +142,8 @@ bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::s
 	bool commandResult = false;
 
 	// Find and execute the appropriate command handler
-	if (cmdName == "move") {
-		commandResult = HandleMoveCommand(player, parts);
-	}
-	else if (cmdName == "get") {
-		commandResult = HandleGetCommand(player, parts);
-	}
-	else if (cmdName == "give") {
-		commandResult = HandleGiveCommand(player, parts);
-	}
-	else if (cmdName == "card") {
-		commandResult = HandleCardCommand(player, parts);
-	}
-	else if (cmdName == "gamestate") {
-		commandResult = HandleGameStateCommand(player, parts);
-	}
-	else if (cmdName == "info") {
-		commandResult = HandleInfoCommand(player, parts);
-	}
-	else if (cmdName == "refresh") {
-		commandResult = HandleRefreshCommand(player, parts);
-	}
-	else if (cmdName == "list" || cmdName == "help") {
-		commandResult = HandleListCommand(player, parts);
-	}
-	else if (cmdName == "minigame") {
-		commandResult = HandleMinigameCommand(player, parts);
+	if (IsValidCommand(cmdName)) {
+		commandResult = commands[cmdName].handler(player, parts);
 	}
 	else {
 		std::cout << "未知指令: " << cmdName << std::endl;
@@ -148,26 +164,22 @@ std::vector<std::string> CommandHandler::GetCommandList(bool detailed) {
 
 	for (const auto& cmd : commands) {
 		if (detailed) {
-			std::string cmdInfo = "/" + cmd.name + " - " + cmd.description + "\n";
-			cmdInfo += "    用法: " + cmd.usage + "\n";
-			cmdInfo += "    範例: " + cmd.example;
+			std::string cmdInfo = "/" + cmd.second.name + " - " + cmd.second.description + "\n";
+			cmdInfo += "    用法: " + cmd.second.usage + "\n";
+			cmdInfo += "    範例: " + cmd.second.example;
 			result.push_back(cmdInfo);
 		}
 		else {
-			result.push_back("/" + cmd.name + " - " + cmd.description);
+			result.push_back("/" + cmd.second.name + " - " + cmd.second.description);
 		}
 	}
 
 	return result;
 }
 
+
 bool CommandHandler::IsValidCommand(const std::string& cmdName) {
-	for (const auto& cmd : commands) {
-		if (cmd.name == cmdName) {
-			return true;
-		}
-	}
-	return false;
+	return commands.find(cmdName) != commands.end();
 }
 
 void CommandHandler::SetGameReference(Game* gamePtr) {
@@ -505,45 +517,9 @@ bool CommandHandler::HandleListCommand(std::shared_ptr<Player> player, const std
 
 	std::cout << "可用指令:" << std::endl;
 	if (detailed) {
-		std::cout << "/move - 移動玩家至指定位置（支援格子名稱或數字）" << std::endl;
-		std::cout << "    用法: /move <位置>" << std::endl;
-		std::cout << "    範例: /move 5、/move to USA" << std::endl;
-
-		std::cout << "/get - 從系統取得金錢（自己或指定玩家）" << std::endl;
-		std::cout << "    用法: /get <金額> 或 /get <玩家> <金額>" << std::endl;
-		std::cout << "    範例: /get 1000、/get Bob 500" << std::endl;
-
-		std::cout << "/give - 給指定玩家金錢（從自己扣除）" << std::endl;
-		std::cout << "    用法: /give <玩家> <金額>" << std::endl;
-		std::cout << "    範例: /give Alice 300" << std::endl;
-
-		std::cout << "/card - 取得指定名稱的卡牌" << std::endl;
-		std::cout << "    用法: /card <卡牌名稱>" << std::endl;
-		std::cout << "    範例: /card Rocket Card" << std::endl;
-
-		std::cout << "/gamestate - 強制改變當前遊戲狀態" << std::endl;
-		std::cout << "    用法: /gamestate <狀態>" << std::endl;
-		std::cout << "    範例: /gamestate finish" << std::endl;
-
-		std::cout << "/info - 顯示所有玩家資訊" << std::endl;
-		std::cout << "    用法: /info" << std::endl;
-		std::cout << "    範例: /info" << std::endl;
-
-		std::cout << "/refresh - 強制重新繪製地圖" << std::endl;
-		std::cout << "    用法: /refresh" << std::endl;
-		std::cout << "    範例: /refresh" << std::endl;
-
-		std::cout << "/list - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
-		std::cout << "    用法: /list [-a]" << std::endl;
-		std::cout << "    範例: /list -a" << std::endl;
-
-		std::cout << "/help - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
-		std::cout << "    用法: /help [-a]" << std::endl;
-		std::cout << "    範例: /help -a" << std::endl;
-
-		std::cout << "/minigame - 直接進入小遊戲選單" << std::endl;
-		std::cout << "    用法: /minigame" << std::endl;
-		std::cout << "    範例: /minigame" << std::endl;
+		for (auto& a : commands) {
+			showDetail(a.second);
+		}
 
 		std::cout << "\n可用卡牌類型:" << std::endl;
 		std::cout << "1. 控制骰子 - 可以指定自己的骰子點數" << std::endl;
@@ -556,16 +532,9 @@ bool CommandHandler::HandleListCommand(std::shared_ptr<Player> player, const std
 
 	}
 	else {
-		std::cout << "/move - 移動玩家至指定位置（支援格子名稱或數字）" << std::endl;
-		std::cout << "/get - 從系統取得金錢（自己或指定玩家）" << std::endl;
-		std::cout << "/give - 給指定玩家金錢（從自己扣除）" << std::endl;
-		std::cout << "/card - 取得指定名稱的卡牌" << std::endl;
-		std::cout << "/gamestate - 強制改變當前遊戲狀態" << std::endl;
-		std::cout << "/info - 顯示所有玩家資訊" << std::endl;
-		std::cout << "/refresh - 強制重新繪製地圖" << std::endl;
-		std::cout << "/list - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
-		std::cout << "/help - 顯示所有可用指令（可加 -a 顯示用法）" << std::endl;
-		std::cout << "/minigame - 直接進入小遊戲選單" << std::endl;
+		for (auto& a : commands) {
+			showDescription(a.second);
+		}
 	}
 
 	return true;
@@ -620,4 +589,24 @@ bool CommandHandler::HandleMinigameCommand(std::shared_ptr<Player> player, const
 	}
 
 	return false;
+}
+
+void CommandHandler::showDetail(const Command& cmd) {
+	showDescription(cmd);
+	std::cout << "    ";
+	showUsage(cmd);
+	std::cout << "    ";
+	showExample(cmd);
+}
+
+void CommandHandler::showDescription(const Command& cmd) {
+	std::cout << "/" << cmd.name << " - " << cmd.description << std::endl;
+}
+
+void CommandHandler::showUsage(const Command& cmd) {
+	std::cout << "用法: " << cmd.usage << std::endl;
+}
+
+void CommandHandler::showExample(const Command& cmd) {
+	std::cout << "範例: " << cmd.example << std::endl;
 }

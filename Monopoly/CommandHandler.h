@@ -1,8 +1,9 @@
 #pragma once
 #include <string>
-#include <vector>
+#include <map>
 #include <memory>
 #include "Player.h"
+#include <functional>
 
 // Forward declarations
 class Game;
@@ -75,8 +76,14 @@ private:
         std::string description;
         std::string usage;
         std::string example;
+        std::function<bool(std::shared_ptr<Player> player, const std::vector<std::string>& args)> handler;
     };
 
-    std::vector<Command> commands;
+    void showDetail(const Command& cmd);
+    void showDescription(const Command& cmd);
+    void showUsage(const Command& cmd);
+    void showExample(const Command& cmd);
+
+    std::map<std::string, Command> commands;
 };
 
