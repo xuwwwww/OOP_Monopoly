@@ -1,4 +1,4 @@
-﻿  main.cpp
-C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(45,22): warning C4018: '<': signed/unsigned 不相符
-C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(50,22): warning C4018: '<': signed/unsigned 不相符
+﻿  Tile.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Tile.cpp(276,29): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Tile.cpp(292,20): warning C4018: '<': signed/unsigned 不相符
   Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\from git\Debug\Monopoly.exe

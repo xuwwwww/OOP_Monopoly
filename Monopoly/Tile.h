@@ -40,6 +40,8 @@ public:
 	 * 玩家踩到這格會觸發的事件（子類實作具體內容）
 	 */
 	virtual void OnLand(Player* p);
+
+	virtual int getLevel();
 };
 
 /**
@@ -83,6 +85,8 @@ public:
 	 * @param name 地名
 	 */
 	PropertyTile(int level, int price, std::string name, int n);
+
+	int getLevel() override;
 
 	/**
 	 * 取得名稱

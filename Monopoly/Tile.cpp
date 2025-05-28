@@ -95,6 +95,11 @@ PropertyTile::PropertyTile(int _id, int _price, std::string _name, int n)
 	number = n;
 }
 
+int PropertyTile::getLevel()
+{
+	return level;
+}
+
 std::string PropertyTile::GetName()
 {
 	return name;
@@ -136,13 +141,14 @@ void PropertyTile::OnLand(Player* p)
 		"購買",
 		"放棄"
 		};
-		int choice = Monopoly::GetUserChoice(getHouse(level) + question, options, true);
+		int choice = Monopoly::GetUserChoice(getHouse(0) + question, options, true);
 
 		if (choice == 0) {
 			if (p->BuyProperty(price)) {
 				std::cout << "\n購買成功！\n";
 				p->AddProperty(this);
 				SetOwner(p);
+				level++;
 			}
 			else {
 				std::cout << "金錢不足，無法購買。\n";
@@ -150,19 +156,20 @@ void PropertyTile::OnLand(Player* p)
 		}
 	}
 	else if (owner == p) {
-		if (level >= 2) {
+		if (level > 2) {
 			std::vector<std::string> sellOptions = {
 				"否，保留土地",
 				"是，升級土地",
 			};
 			std::string sellQuestion = "土地已升至最高級！\n是否要出售這塊土地？你可以獲得 150 元。";
-			int sellChoice = Monopoly::GetUserChoice(getHouse(level) + sellQuestion, sellOptions, true);
+			int sellChoice = Monopoly::GetUserChoice(getHouse(level - 1) + sellQuestion, sellOptions, true);
 
-			if (sellChoice == 0) {
+			if (sellChoice == 1) {
 				p->SellProperty(this, 150);
 				owner = nullptr;
 				level = 0;
 				std::cout << "\n土地已出售，獲得 150 元！\n";
+				Monopoly::WaitForEnter();
 			}
 			// return;
 		}
@@ -175,7 +182,7 @@ void PropertyTile::OnLand(Player* p)
 			"放棄",
 			"出售土地（獲得 150 元）"
 			};
-			int choice = Monopoly::GetUserChoice(getHouse(level) + question, options, true);
+			int choice = Monopoly::GetUserChoice(getHouse(level - 1) + question, options, true);
 
 			if (choice == 0) {
 				if (p->BuyProperty(300)) {
@@ -270,7 +277,7 @@ void ShopTile::OnLand(Player* p)
 			if (!items[choice]) {
 				std::cout << "此商品已經購買過，無法再次購買。\n";
 			}
-			else if (p->BuyItem(itemPrices[choice])){
+			else if (p->BuyItem(itemPrices[choice])) {
 				p->AddItem(items[choice]);
 				items[choice] = nullptr;
 				std::cout << "購買成功！\n";
@@ -496,6 +503,11 @@ std::string Tile::GetName()
 
 void Tile::OnLand(Player* p)
 {
+}
+
+int Tile::getLevel()
+{
+	return 0;
 }
 
 //void PrintHouse(int level) {

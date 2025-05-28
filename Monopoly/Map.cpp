@@ -216,7 +216,7 @@ void Map::PrintMap(std::vector<Player*>& players)
 	const int GRID_WIDTH = 8;      // 頂部/底部的格子數 0–7
 	const int SIDE_HEIGHT_RIGHT = 6; // 右側邊的格子數 8–13
 	const int SIDE_HEIGHT_LEFT = 6; // 左側邊的格子數 27–22
-	const int CELL_WIDTH = 12;    // 每個格子的寬度
+	const int CELL_WIDTH = 16;    // 每個格子的寬度
 	const std::string RESET_COLOR = "\033[0m";
 
 	//玩家位置對應玩家符號
@@ -257,6 +257,8 @@ void Map::PrintMap(std::vector<Player*>& players)
 		std::string colorCode = get_color_code(idx);
 		ss << colorCode;
 		std::string content = std::to_string(idx) + " " + names[idx];
+		if (map[idx]->getLevel() != 0)
+			content += "(" + std::to_string(map[idx]->getLevel()) + ")";
 		if ((int)content.length() > CELL_WIDTH - 1)
 			content = content.substr(0, CELL_WIDTH - 1);
 		ss << std::left << std::setw(CELL_WIDTH - 1) << std::setfill(' ') << content << " ";
