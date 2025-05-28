@@ -281,6 +281,7 @@ void ShopTile::OnLand(Player* p)
 				p->AddItem(items[choice]);
 				items[choice] = nullptr;
 				std::cout << "購買成功！\n";
+				break;
 			}
 			else {
 				std::cout << "餘額不足，購買失敗。\n";
