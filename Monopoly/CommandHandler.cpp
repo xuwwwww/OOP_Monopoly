@@ -254,6 +254,21 @@ bool CommandHandler::HandleMoveCommand(std::shared_ptr<Player> player, const std
 
 		player->SetPosition(position);
 		std::cout << player->GetName() << " 移動到位置 " << position << std::endl;
+
+		auto currentTile = game->gameMap->GetTileAt(position);
+		std::string tileName = currentTile->GetName();
+		if (tileName.empty()) {
+			tileName = "第 " + std::to_string(position) + " 格";
+		}
+
+		std::vector<std::string> options = {"是","否"};
+		std::string question = "是否要觸發" + tileName + "的效果？";
+		int choice = Monopoly::GetUserChoice(question, options, true);
+
+		if (choice == 0) {
+			currentTile->OnLand(game->getCurrentPlayer());
+		}
+
 		return true;
 	}
 	catch (const std::exception& e) {
