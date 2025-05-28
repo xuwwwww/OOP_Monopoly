@@ -93,6 +93,7 @@ public:
 	 */
 	void Pay(Player* other, int amount);
 
+	bool isDead = false;
 private:
 	/** ª±®a¦WºÙ */
 	std::string name;

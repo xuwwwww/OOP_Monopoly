@@ -193,7 +193,7 @@ void Player::Pay(Player* other, int amount)
 			other->money += money;
 		}
 
-		money = 0; // 設為0，表示已用完所有金錢
+		money = -1; // 設為0，表示已用完所有金錢
 		std::cout << name << " 無法完成支付！\n";
 
 		// 當玩家破產時（且是因為付款給其他玩家），轉移所有地產給債主

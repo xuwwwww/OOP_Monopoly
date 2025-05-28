@@ -107,7 +107,7 @@ public:
 	 * @param input 指令字串
 	 * @return 是否成功處理
 	 */
-	bool processCommand(std::shared_ptr<Player> player, const std::string& input);
+	std::pair<bool, int>  processCommand(std::shared_ptr<Player> player, const std::string& input);
 
 	/**
 	 * 取得當前玩家

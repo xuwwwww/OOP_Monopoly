@@ -95,10 +95,12 @@ int Monopoly::GetUserChoice(const std::string& question, const std::vector<std::
 				std::shared_ptr<Player> playerPtr(currentPlayer, [](Player*) {}); // No-op deleter - we don't own the player
 
 				// Process the command
-				if (game->processCommand(playerPtr, input)) {
+				std::pair<bool, int> result = game->processCommand(playerPtr, input);
+				if (result.first) {
 					// Command w processed, wait for user to acknowledge
 					std::cout << "\n指令已執行。按任意鍵繼續..." << std::endl;
 					_getch();
+					if (result.second == 1)return -1;
 				}
 				else {
 					// Command failed

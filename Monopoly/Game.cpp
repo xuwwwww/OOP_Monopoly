@@ -228,7 +228,7 @@ void Game::NextTurn()
 	auto currentPlayer = players[currentPlayerIdx];
 
 	// 如果當前玩家已破產，跳到下一位
-	if (currentPlayer->GetMoney() < 0) {
+	if (currentPlayer->GetMoney() < 0 || currentPlayer->isDead) {
 		// 換下一位
 		currentPlayerIdx = (currentPlayerIdx + 1) % static_cast<int>(players.size());
 		NextTurn(); // 遞迴呼叫，跳到下一個玩家
@@ -403,6 +403,7 @@ void Game::NextTurn()
 	// 檢查玩家是否破產
 	if (currentPlayer->GetMoney() < 0) {
 		std::cout << currentPlayer->GetName() << " 已破產！\n";
+		currentPlayer->isDead = true;
 
 		// 立即檢查是否只剩下一位玩家，如果是則結束遊戲
 		if (CheckWinCondition()) {
@@ -526,6 +527,8 @@ void Game::PrintPlayerStatus()
 		else {
 			status = "正常";
 		}
+
+		if (players[i]->isDead)status = "破產";
 
 		// 道具字串
 		std::string itemStr = players[i]->GetItem().empty() ? "無" : "";
@@ -1195,9 +1198,9 @@ Player* Game::getCurrentPlayer() {
 	return nullptr;
 }
 
-bool Game::processCommand(std::shared_ptr<Player> player, const std::string& input) {
+std::pair<bool, int>  Game::processCommand(std::shared_ptr<Player> player, const std::string& input) {
 	if (input.empty() || input[0] != '/') {
-		return false;
+		return std::make_pair(false, 0);
 	}
 
 	// The first time we process a command, initialize the command handler

@@ -123,21 +123,21 @@ void CommandHandler::Initialize() {
 }
 
 
-bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::string& input) {
+std::pair<bool, int> CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::string& input) {
 	if (input.empty() || input[0] != '/') {
-		return false;
+		return std::make_pair(false, 0);
 	}
 
 	// Split the command and its arguments
 	std::vector<std::string> parts = SplitCommand(input);
 	if (parts.empty()) {
-		return false;
+		return std::make_pair(false, 0);
 	}
 
 	// Extract command name (without the /)
 	std::string cmdName = parts[0].substr(1);
 	if (cmdName.empty()) {
-		return false;
+		return std::make_pair(false, 0);
 	}
 
 	// Remove command from arguments
@@ -148,10 +148,14 @@ bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::s
 	// Find and execute the appropriate command handler
 	if (IsValidCommand(cmdName)) {
 		commandResult = commands[cmdName].handler(player, parts);
+		if (commandResult && game && cmdName == "move") {
+			game->SaveGame();
+			return std::make_pair(true, 1);
+		}
 	}
 	else {
 		std::cout << "未知指令: " << cmdName << std::endl;
-		return false;
+		return std::make_pair(false, 0);
 	}
 
 	// If command was successful and game reference is valid, save the game state
@@ -160,7 +164,7 @@ bool CommandHandler::ProcessCommand(std::shared_ptr<Player> player, const std::s
 		// std::cout << "已儲存遊戲進度" << std::endl;
 	}
 
-	return commandResult;
+	return std::make_pair(true, 0);
 }
 
 std::vector<std::string> CommandHandler::GetCommandList(bool detailed) {
@@ -426,7 +430,7 @@ bool CommandHandler::HandleCardCommand(std::shared_ptr<Player> player, const std
 		return true;
 	}
 	else if (cardName == "destroy card" || cardName == "摧毀卡" || cardName == "destroy") {
-		player->AddItem(new FateCard());
+		player->AddItem(new DestroyCard());
 		std::cout << player->GetName() << " 獲得卡牌: 摧毀卡" << std::endl;
 		return true;
 	}

@@ -159,7 +159,7 @@ void PropertyTile::OnLand(Player* p)
 		if (level > 2) {
 			std::vector<std::string> sellOptions = {
 				"否，保留土地",
-				"是，升級土地",
+				"是，出售土地",
 			};
 			std::string sellQuestion = "土地已升至最高級！\n是否要出售這塊土地？你可以獲得 150 元。";
 			int sellChoice = Monopoly::GetUserChoice(getHouse(level - 1) + sellQuestion, sellOptions, true);
