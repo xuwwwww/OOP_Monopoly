@@ -42,6 +42,8 @@ public:
 	virtual void OnLand(Player* p);
 
 	virtual int getLevel();
+
+	virtual void SetLevel(int);
 };
 
 /**
@@ -103,6 +105,8 @@ public:
 	 * @return 地產等級
 	 */
 	int GetLevel();
+
+	void SetLevel(int) override;
 
 	/**
 	 * 升級地產

@@ -131,6 +131,7 @@ void Player::SellProperty(Tile* p, int get_money)
 	auto it = std::find(property.begin(), property.end(), p);
 	if (it != property.end()) {
 		p->color = "";
+		p->SetLevel(0);
 		property.erase(it);
 	}
 	money += get_money;

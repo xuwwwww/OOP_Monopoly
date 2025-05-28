@@ -1,2 +1,22 @@
-﻿  Map.cpp
+﻿  CommandHandler.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\CommandHandler.cpp(482,20): warning C4018: '<': signed/unsigned 不相符
+  Game.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(517,20): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Game.cpp(1005,22): warning C4018: '<': signed/unsigned 不相符
+  HorseRacing.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\HorseRacing.cpp(127,39): warning C4244: '引數': 將 'double' 轉換為 'int'，由於類型不同，可能導致資料遺失
+  Item.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Item.cpp(73,20): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Item.cpp(191,20): warning C4018: '<': signed/unsigned 不相符
+  Map.cpp
+  Monopoly.cpp
+  Player.cpp
+  SheLongMen.cpp
+  Tile.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Tile.cpp(281,29): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\Tile.cpp(298,20): warning C4018: '<': signed/unsigned 不相符
+  main.cpp
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(45,22): warning C4018: '<': signed/unsigned 不相符
+C:\Users\user\Desktop\N+++++\HW\from git\Monopoly\main.cpp(50,22): warning C4018: '<': signed/unsigned 不相符
+  正在產生程式碼...
   Monopoly.vcxproj -> C:\Users\user\Desktop\N+++++\HW\from git\Debug\Monopoly.exe

@@ -115,6 +115,11 @@ int PropertyTile::GetLevel()
 	return level;
 }
 
+void PropertyTile::SetLevel(int _level)
+{
+	level = _level;
+}
+
 void PropertyTile::Upgrade()
 {
 	level++;
@@ -509,6 +514,11 @@ void Tile::OnLand(Player* p)
 int Tile::getLevel()
 {
 	return 0;
+}
+
+void Tile::SetLevel(int)
+{
+	return;
 }
 
 //void PrintHouse(int level) {

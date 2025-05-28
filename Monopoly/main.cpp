@@ -58,7 +58,7 @@ void ShowWaveLogo() {
 }
 
 int main() {
-	//ShowWaveLogo();
+	ShowWaveLogo();
 	system("cls");
 
 	while (true) {
