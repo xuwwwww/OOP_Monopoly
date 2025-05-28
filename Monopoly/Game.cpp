@@ -72,6 +72,28 @@ std::vector<std::vector<std::string>> diceFaces = {
 
 Game::Game()
 {
+	std::vector<std::string> possiblePaths = {
+	"../json/configs.json",
+	"json/configs.json",
+	"../../json/configs.json",
+	"../../../json/configs.json",
+	"./json/configs.json"
+	};
+
+	std::ifstream file;
+
+	for (const auto& path : possiblePaths) {
+		file.open(path);
+		if (file) break;
+	}
+
+	if (!file) {
+		std::cerr << "錯誤: 找不到 configs.json!" << std::endl;
+	}
+	nlohmann::json data;
+	file >> data;
+	file.close();
+
 	currentPlayerIdx = 0;
 	gameOver = false;
 	gameMap = nullptr; // 初始化為 nullptr
@@ -79,6 +101,13 @@ Game::Game()
 
 	// 設定全域遊戲實例指標
 	gameInstance = this;
+
+	if (data["init"]["winMoney"].is_number()) {
+		winMoney = data["init"]["winMoney"];
+	}
+	else {
+		winMoney = 5000;
+	}
 }
 
 void Game::InitGame()
@@ -100,7 +129,6 @@ void Game::InitGame()
 
 	if (!file) {
 		std::cerr << "錯誤: 找不到 configs.json!" << std::endl;
-		return;
 	}
 	nlohmann::json data;
 	file >> data;
@@ -123,7 +151,10 @@ void Game::InitGame()
 
 	Clear();
 	std::cout << "## 輸入玩家設定 ##\n";
-	int money, win_money;
+	int money = 1000;
+	if (data["init"]["money"].is_number()) {
+		money = data["init"]["money"];
+	}
 	for (int i = 0; i < playerNum; i++) {
 		std::string name;
 		while (true) {
@@ -146,14 +177,7 @@ void Game::InitGame()
 			if (!duplicate) break;
 		}
 
-		Player* p;
-		if (data["init"]["money"].is_number()) {
-			p = new Player(name, colors[i], data["init"]["money"]);
-			money = data["init"]["money"];
-		}
-		else {
-			p = new Player(name, colors[i], 1000);
-		}
+		Player* p = new Player(name, colors[i], money);
 		players.push_back(p);
 	}
 
@@ -188,12 +212,9 @@ void Game::InitGame()
 		}
 	}
 
-	if (data["init"]["winMoney"].is_number())win_money = data["init"]["winMoney"];
-	winMoney = win_money;
-
 	std::cout << "\n遊戲初始化完成，共 " << players.size() << " 位玩家。" << std::endl;
-	std::cout << "設定起始資金：" << std::to_string(money) << std::endl;
-	std::cout << "勝利金額：" << std::to_string(winMoney) << std::endl;
+	std::cout << "設定起始資金：" << money << std::endl;
+	std::cout << "勝利金額：" << winMoney << std::endl;
 
 	// Clear(); // 在玩家設定完成後清除畫面並顯示初始狀態
 	Monopoly::WaitForEnter();
