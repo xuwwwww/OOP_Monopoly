@@ -44,15 +44,21 @@
     },
     {
       "name": "list",
-      "description": "顯示所有可用指令",
+      "description": "顯示所有可用指令（可加 -a 顯示用法）",
       "usage": "/list [-a]",
       "example": "/list -a"
     },
     {
       "name": "help",
-      "description": "顯示所有可用指令",
+      "description": "顯示所有可用指令（可加 -a 顯示用法）",
       "usage": "/help [-a]",
       "example": "/help -a"
+    },
+    {
+      "name": "minigame",
+      "description": "直接進入小遊戲選單",
+      "usage": "/minigame",
+      "example": "/minigame"
     },
     {
       "name": "minigame",
