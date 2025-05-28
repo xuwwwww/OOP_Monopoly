@@ -110,6 +110,10 @@ void CommandHandler::Initialize() {
 			}
 			commands.emplace(cmd["name"], command);
 		}
+		items.clear();
+		for (const auto& item : commandData["card_types"]) {
+			items.emplace(utf8ToBig5(item["name"]), utf8ToBig5(item["description"]));
+		}
 	}
 	catch (const std::exception& e) {
 		std::cerr << "解析 command.json 時發生錯誤: " << e.what() << std::endl;
@@ -537,10 +541,11 @@ bool CommandHandler::HandleListCommand(std::shared_ptr<Player> player, const std
 		}
 
 		std::cout << "\n可用卡牌類型:" << std::endl;
-		std::cout << "1. 控制骰子 - 可以指定自己的骰子點數" << std::endl;
-		std::cout << "2. 火箭卡 - 讓指定玩家住院兩回合" << std::endl;
-		std::cout << "3. 命運卡 - 強制觸發命運事件" << std::endl;
-		std::cout << "4. 摧毀卡 - 摧毀一位玩家的一個地產" << std::endl;
+		int count(1);
+		for (auto& a : items) {
+			std::cout << count << ". " << a.first << " - " << a.second << std::endl;
+			count++;
+		}
 	}
 	else {
 		for (auto& a : commands) {

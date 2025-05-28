@@ -85,5 +85,6 @@ private:
     void showExample(const Command& cmd);
 
     std::map<std::string, Command> commands;
+    std::map<std::string, std::string> items;
 };
 
